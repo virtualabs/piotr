@@ -1,0 +1,494 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html4" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>API Reference &mdash; piotr 1.0.0 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Reference manual" href="manual.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> piotr
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="concepts.html">What is Piotr ?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Setup instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="manual.html">Reference manual</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">API Reference</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">piotr</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>API Reference</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/api.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-piotr.api">
+<span id="api-reference"></span><h1>API Reference<a class="headerlink" href="#module-piotr.api" title="Permalink to this headline">¶</a></h1>
+<p>Piotr API</p>
+<p>This module allows to interact with/instrument Piotr virtual devices in a
+pythonic way. It exposes a main class, <a class="reference internal" href="#piotr.api.Piotr" title="piotr.api.Piotr"><code class="xref py py-class docutils literal notranslate"><span class="pre">Piotr</span></code></a>, that is able to
+interact with running instances and to automate things.</p>
+<dl class="class">
+<dt id="piotr.api.Debugger">
+<em class="property">class </em><code class="descclassname">piotr.api.</code><code class="descname">Debugger</code><span class="sig-paren">(</span><em>inst_name</em>, <em>pid</em>, <em>ip=None</em>, <em>port=4444</em>, <em>gdb='gdb-multiarch'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/piotr/api.html#Debugger"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#piotr.api.Debugger" title="Permalink to this definition">¶</a></dt>
+<dd><p>This class is a wrapper for avatar2’s GDBProtocol class that will handle
+gdb-multiarch.</p>
+<dl class="method">
+<dt id="piotr.api.Debugger.cont">
+<code class="descname">cont</code><span class="sig-paren">(</span><em>blocking=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/piotr/api.html#Debugger.cont"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#piotr.api.Debugger.cont" title="Permalink to this definition">¶</a></dt>
+<dd><p>Continue execution.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="piotr.api.Debugger.on_debugger_msg">
+<code class="descname">on_debugger_msg</code><span class="sig-paren">(</span><em>message</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/piotr/api.html#Debugger.on_debugger_msg"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#piotr.api.Debugger.on_debugger_msg" title="Permalink to this definition">¶</a></dt>
+<dd><p>Process async message sent by gdb</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>message</strong> – message</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="piotr.api.Debugger.read_memory">
+<code class="descname">read_memory</code><span class="sig-paren">(</span><em>address</em>, <em>wordsize=4</em>, <em>num_words=1</em>, <em>raw=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/piotr/api.html#Debugger.read_memory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#piotr.api.Debugger.read_memory" title="Permalink to this definition">¶</a></dt>
+<dd><p>reads memory
+:param address:   Address to write to
+:param wordsize:  the size of a read word (1, 2, 4 or 8)
+:param num_words: the amount of read words
+:param raw:       Whether the read memory should be returned unprocessed
+:return:          The read memory</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="piotr.api.Debugger.read_register">
+<code class="descname">read_register</code><span class="sig-paren">(</span><em>reg</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/piotr/api.html#Debugger.read_register"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#piotr.api.Debugger.read_register" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read register</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="piotr.api.Debugger.remove_breakpoint">
+<code class="descname">remove_breakpoint</code><span class="sig-paren">(</span><em>bkpt</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/piotr/api.html#Debugger.remove_breakpoint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#piotr.api.Debugger.remove_breakpoint" title="Permalink to this definition">¶</a></dt>
+<dd><p>Deletes a breakpoint</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="piotr.api.Debugger.set_abi">
+<code class="descname">set_abi</code><span class="sig-paren">(</span><em>abi</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/piotr/api.html#Debugger.set_abi"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#piotr.api.Debugger.set_abi" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set ABI.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="piotr.api.Debugger.set_breakpoint">
+<code class="descname">set_breakpoint</code><span class="sig-paren">(</span><em>line</em>, <em>hardware=False</em>, <em>temporary=False</em>, <em>regex=False</em>, <em>condition=None</em>, <em>ignore_count=0</em>, <em>thread=0</em>, <em>pending=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/piotr/api.html#Debugger.set_breakpoint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#piotr.api.Debugger.set_breakpoint" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inserts a breakpoint</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>hardware</strong> (<em>bool</em>) – Hardware breakpoint</li>
+<li><strong>temporary</strong> (<em>bool</em>) – Tempory breakpoint</li>
+<li><strong>regex</strong> (<em>str</em>) – If set, inserts breakpoints matching the regex</li>
+<li><strong>condition</strong> (<em>str</em>) – If set, inserts a breakpoint with specified condition</li>
+<li><strong>ignore_count</strong> (<em>int</em>) – Amount of times the bp should be ignored</li>
+<li><strong>thread</strong> (<em>int</em>) – Threadno in which this breakpoints should be added</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">The number of the breakpoint</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="piotr.api.Debugger.stop">
+<code class="descname">stop</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/piotr/api.html#Debugger.stop"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#piotr.api.Debugger.stop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Stop execution of target.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="piotr.api.Debugger.wait">
+<code class="descname">wait</code><span class="sig-paren">(</span><em>blocking=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/piotr/api.html#Debugger.wait"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#piotr.api.Debugger.wait" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wait for target to be stopped.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="piotr.api.Debugger.write_memory">
+<code class="descname">write_memory</code><span class="sig-paren">(</span><em>address</em>, <em>wordsize</em>, <em>val</em>, <em>num_words=1</em>, <em>raw=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/piotr/api.html#Debugger.write_memory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#piotr.api.Debugger.write_memory" title="Permalink to this definition">¶</a></dt>
+<dd><p>Writes memory</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>address</strong> – Address to write to</li>
+<li><strong>wordsize</strong> – the size of the write (1, 2, 4 or 8)</li>
+<li><strong>val</strong> (<em>int if num_words == 1 and raw == False
+list if num_words &gt; 1 and raw == False
+str</em><em> or </em><em>byte if raw == True</em>) – the written value</li>
+<li><strong>num_words</strong> – The amount of words to read</li>
+<li><strong>raw</strong> – Specifies whether to write in raw or word mode</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">True on success else False</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="piotr.api.Device">
+<em class="property">class </em><code class="descclassname">piotr.api.</code><code class="descname">Device</code><span class="sig-paren">(</span><em>deviceName</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/piotr/api.html#Device"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#piotr.api.Device" title="Permalink to this definition">¶</a></dt>
+<dd><p>API Device object.</p>
+<dl class="method">
+<dt id="piotr.api.Device.get_sysroot">
+<code class="descname">get_sysroot</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/piotr/api.html#Device.get_sysroot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#piotr.api.Device.get_sysroot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return this device root fs path</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="piotr.api.Device.run">
+<code class="descname">run</code><span class="sig-paren">(</span><em>alias=None</em>, <em>background=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/piotr/api.html#Device.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#piotr.api.Device.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run emulated device.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="exception">
+<dt id="piotr.api.DeviceNotFound">
+<em class="property">exception </em><code class="descclassname">piotr.api.</code><code class="descname">DeviceNotFound</code><a class="reference internal" href="_modules/piotr/api.html#DeviceNotFound"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#piotr.api.DeviceNotFound" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="class">
+<dt id="piotr.api.Instance">
+<em class="property">class </em><code class="descclassname">piotr.api.</code><code class="descname">Instance</code><span class="sig-paren">(</span><em>pid</em>, <em>device</em>, <em>sock</em>, <em>instName</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/piotr/api.html#Instance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#piotr.api.Instance" title="Permalink to this definition">¶</a></dt>
+<dd><p>This class represents a Piotr running device instance and allows to interact
+with it, execute commands into the emulated host and target (if Qemu agent
+is supported by the device), enumerate and manipulate process.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>pid</strong> (<em>int</em>) – PID of Qemu instance</li>
+<li><strong>device</strong> (<em>str</em>) – Name of parent device, as referenced in Piotr devices list</li>
+<li><strong>sock</strong> (<em>str</em>) – Socket file used to communicate with Qemu agent</li>
+<li><strong>instName</strong> (<em>str</em>) – Instance name, as referenced in Piotr running instances</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="piotr.api.Instance.debug">
+<code class="descname">debug</code><span class="sig-paren">(</span><em>pid</em>, <em>ip='0.0.0.0'</em>, <em>port=4444</em>, <em>gdb_executable='gdb-multiarch'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/piotr/api.html#Instance.debug"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#piotr.api.Instance.debug" title="Permalink to this definition">¶</a></dt>
+<dd><p>Runs a gdb server and attaches it to a process.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="piotr.api.Instance.exec_host">
+<code class="descname">exec_host</code><span class="sig-paren">(</span><em>command</em>, <em>wait=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/piotr/api.html#Instance.exec_host"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#piotr.api.Instance.exec_host" title="Permalink to this definition">¶</a></dt>
+<dd><p>Execute a command in host.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="piotr.api.Instance.exec_target">
+<code class="descname">exec_target</code><span class="sig-paren">(</span><em>command</em>, <em>wait=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/piotr/api.html#Instance.exec_target"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#piotr.api.Instance.exec_target" title="Permalink to this definition">¶</a></dt>
+<dd><p>Execute a command in guest.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>command</strong> (<em>str</em>) – command to execute</li>
+<li><strong>return_output</strong> (<em>bool</em>) – wait for the process to end and return output</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">command output or executable PID</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="piotr.api.Instance.get_sysroot">
+<code class="descname">get_sysroot</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/piotr/api.html#Instance.get_sysroot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#piotr.api.Instance.get_sysroot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return this instance root path</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="piotr.api.Instance.kill">
+<code class="descname">kill</code><span class="sig-paren">(</span><em>pid</em>, <em>sig=9</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/piotr/api.html#Instance.kill"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#piotr.api.Instance.kill" title="Permalink to this definition">¶</a></dt>
+<dd><p>Kill a processus.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="piotr.api.Instance.pid">
+<code class="descname">pid</code><span class="sig-paren">(</span><em>process_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/piotr/api.html#Instance.pid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#piotr.api.Instance.pid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find process ID from process name
+:param process_name: process name
+:type process_name: str
+:return: PID of the process, None on error</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="piotr.api.Instance.ps">
+<code class="descname">ps</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/piotr/api.html#Instance.ps"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#piotr.api.Instance.ps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run <cite>ps</cite> on this target and return a list of processes.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">list of processes</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="piotr.api.Instance.stop">
+<code class="descname">stop</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/piotr/api.html#Instance.stop"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#piotr.api.Instance.stop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Stop instance.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="piotr.api.Instance.target_start">
+<code class="descname">target_start</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/piotr/api.html#Instance.target_start"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#piotr.api.Instance.target_start" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run target in host.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="piotr.api.Piotr">
+<em class="property">class </em><code class="descclassname">piotr.api.</code><code class="descname">Piotr</code><a class="reference internal" href="_modules/piotr/api.html#Piotr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#piotr.api.Piotr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Piotr main API.</p>
+<dl class="staticmethod">
+<dt id="piotr.api.Piotr.devices">
+<em class="property">static </em><code class="descname">devices</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/piotr/api.html#Piotr.devices"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#piotr.api.Piotr.devices" title="Permalink to this definition">¶</a></dt>
+<dd><p>Enumerate registered devices.</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="piotr.api.Piotr.instance">
+<em class="property">static </em><code class="descname">instance</code><span class="sig-paren">(</span><em>inst_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/piotr/api.html#Piotr.instance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#piotr.api.Piotr.instance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find an existing instance by name</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="piotr.api.Piotr.instances">
+<em class="property">static </em><code class="descname">instances</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/piotr/api.html#Piotr.instances"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#piotr.api.Piotr.instances" title="Permalink to this definition">¶</a></dt>
+<dd><p>Enumerate running instances.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="piotr.api.Process">
+<em class="property">class </em><code class="descclassname">piotr.api.</code><code class="descname">Process</code><span class="sig-paren">(</span><em>pid=-1</em>, <em>user=None</em>, <em>path=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/piotr/api.html#Process"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#piotr.api.Process" title="Permalink to this definition">¶</a></dt>
+<dd><p>This class holds information about a process on the emulated system.</p>
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="manual.html" class="btn btn-neutral float-left" title="Reference manual" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, Damien Cauquil.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

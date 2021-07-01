@@ -1,0 +1,292 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html4" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>What is Piotr ? &mdash; piotr 1.0.0 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Setup instructions" href="install.html" />
+    <link rel="prev" title="Welcome to piotr’s documentation!" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> piotr
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">What is Piotr ?</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#emulation-approach">Emulation approach</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#virtual-device-components">Virtual device components</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#piotr-for-training">Piotr for training</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#piotr-api">Piotr API</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Setup instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="manual.html">Reference manual</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API Reference</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">piotr</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>What is Piotr ?</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/concepts.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="what-is-piotr">
+<h1>What is Piotr ?<a class="headerlink" href="#what-is-piotr" title="Permalink to this headline">¶</a></h1>
+<p>Piotr is a framework designed to create, run, instrument and share virtual
+devices. It is designed for trainers and security researchers in order to provide
+an easy way to virtualize an existing device and instrument it with Piotr’s API
+to automate an analysis or to automatically exploit a vulnerability.</p>
+<p>Piotr uses Qemu as its emulation core, and especially Qemu’s full system emulation
+for the ARM architecture. It is the only supported architecture so far, but others
+may be supported in the future depending on Qemu capabilities and evolution.</p>
+<p>Piotr is quite similar to Saumil Shah’s ARM-X emulation environment, but differs
+in many ways:</p>
+<ul class="simple">
+<li>its architecture is simpler than ARM-X, with no network connection required</li>
+<li>it is really easy to install (even for trainees)</li>
+<li>it provides a convenient way to define virtual devices</li>
+<li>it provides specific tools and a Python API to interact with running virtual devices</li>
+</ul>
+<div class="section" id="emulation-approach">
+<h2>Emulation approach<a class="headerlink" href="#emulation-approach" title="Permalink to this headline">¶</a></h2>
+<p>Piotr follows the same model <cite>ARM-X</cite> previously introduced, relying on a Linux
+host system that will be used to bootstrap the target environment. The target
+system runs in a chroot-ed environment inside the host system, thus allowing
+to debug its processes, access its filesystem without any restriction, etc.</p>
+<p>The target device filesystem is mounted over 9P which is a file sharing protocol
+that does not require any network connection and that is handled by the Linux
+kernel. No need to host a <em>samba</em> server, it works out of the box on any Linux
+computer.</p>
+<p>Virtual devices are defined by a set of files, including a YAML configuration
+file that tells Piotr how to emulate this device and many more options that may
+be used to define its behavior.</p>
+</div>
+<div class="section" id="virtual-device-components">
+<h2>Virtual device components<a class="headerlink" href="#virtual-device-components" title="Permalink to this headline">¶</a></h2>
+<p>A virtual device is defined by the following components:</p>
+<ul class="simple">
+<li>A linux kernel compatible with the original device system</li>
+<li>An optional DTB (<em>Device-tree block</em>) file that specifies the internal components and how they are interconnected</li>
+<li>Two filesystems: one for the host and another one for the target device</li>
+<li>A set of scripts that will be used by Piotr to launch the target inside the emulated host system</li>
+</ul>
+<p>Piotr manages separately the following components:</p>
+<ul class="simple">
+<li>virtual devices definitions (including configuration file, root filesystem and more)</li>
+<li>Host linux kernels that are used by the emulated host system and provides all the required tools to analyse the target system</li>
+<li>Host root filesystems</li>
+</ul>
+<p>A stock host Linux kernel and host root filesystem is included in Piotr and automatically installed.
+These linux kernel and root filesystem provides multiple tools and are designed to automate as much
+tasks as possible.</p>
+<p>Anyway, you may design your own root filesystems or kernels with your own tools and configuration, and install them with Piotr.
+By doing so, multiple virtual devices may rely on them avoiding redundancy. These kernels and filesystems will
+be automatically added to exported virtual devices, and installed during importation.</p>
+</div>
+<div class="section" id="piotr-for-training">
+<h2>Piotr for training<a class="headerlink" href="#piotr-for-training" title="Permalink to this headline">¶</a></h2>
+<p>As a trainer, I often needed a way to share a virtual device with my trainees. Installing
+Qemu, configuring it and running a virtual device on a Linux system is far from straightforward,
+and many trainees had a hard time launching a single virtual device.</p>
+<p>Piotr provides a convenient way to export and import virtual devices that will make your life
+easier. Just make trainees install piotr on their systems, share the virtual device packaged file
+with them and let them import and run it. That’s no more difficult than that, and it saves time.</p>
+</div>
+<div class="section" id="piotr-api">
+<h2>Piotr API<a class="headerlink" href="#piotr-api" title="Permalink to this headline">¶</a></h2>
+<p>Piotr, as a Python-based framework, provides a Python module to interact with a running
+virtual device and automate various tasks: create and enumerate processes, access its
+filesystem, or attach a gdbserver to a specific PID. This could be interesting if you
+want to automate some specific tasks, instruments a virtual device or even automate
+the exploitation of a vulnerability.</p>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="install.html" class="btn btn-neutral float-right" title="Setup instructions" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="index.html" class="btn btn-neutral float-left" title="Welcome to piotr’s documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, Damien Cauquil.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

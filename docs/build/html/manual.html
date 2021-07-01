@@ -1,0 +1,1042 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html4" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Reference manual &mdash; piotr 1.0.0 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="API Reference" href="api.html" />
+    <link rel="prev" title="Quickstart" href="quickstart.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> piotr
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="concepts.html">What is Piotr ?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Setup instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Reference manual</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#introduction">Introduction</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#why-another-emulation-framework-for-iot-training-and-research">Why another emulation framework for IoT training and research ?</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#interesting-features">Interesting features</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#approach">Approach</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#supported-architectures-and-platforms">Supported architectures and platforms</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#piotr-main-concepts">Piotr main concepts</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#kernels-and-host-filesystems">Kernels and host filesystems</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#host-filesystem">Host filesystem</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#kernel">Kernel</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#virtual-embedded-device">Virtual embedded device</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#so-what-is-a-virtual-device-made-of">So, what is a virtual device made of ?</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#running-a-virtual-device">Running a virtual device</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#exporting-a-virtual-device">Exporting a virtual device</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#importing-a-virtual-device">Importing a virtual device</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#virtualizing-an-existing-embedded-device">Virtualizing an existing embedded device</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#creating-a-virtual-device">Creating a virtual device</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#create-a-device-template">Create a device template</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rebuild-the-device-s-root-filesystem">Rebuild the device’s root filesystem</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#create-the-device-configuration-file">Create the device configuration file</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#creating-a-bootup-script">Creating a bootup script</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#booting-your-device">Booting your device</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#using-a-custom-kernel-and-host-root-filesystem">Using a custom kernel and host root filesystem</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#prerequisites">Prerequisites</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#building-a-kernel-for-piotr">Building a kernel for Piotr</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#kernel-configuration">Kernel configuration</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#compilation">Compilation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#installation">Installation</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#building-a-root-filesystem">Building a root filesystem</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#mandatory-tools-required-by-piotr">Mandatory tools required by Piotr</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#creating-the-root-filesystem">Creating the root filesystem</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#api">API</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#importing-piotr-api">Importing Piotr API</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#creating-and-accessing-a-virtual-device">Creating and accessing a virtual device</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#starting-a-virtual-device">Starting a virtual device</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#retrieving-a-running-instance">Retrieving a running instance</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#managing-processes">Managing processes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#creating-a-process">Creating a process</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#enumerating-processes">Enumerating processes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#finding-a-process-pid">Finding a process PID</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#terminating-a-process">Terminating a process</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#remote-debugging-a-process">Remote debugging a process</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#controlling-the-execution">Controlling the execution</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#accessing-and-modifying-registers">Accessing and modifying registers</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#stopping-a-running-instance">Stopping a running instance</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API Reference</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">piotr</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>Reference manual</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/manual.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="reference-manual">
+<h1>Reference manual<a class="headerlink" href="#reference-manual" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="why-another-emulation-framework-for-iot-training-and-research">
+<h3>Why another emulation framework for IoT training and research ?<a class="headerlink" href="#why-another-emulation-framework-for-iot-training-and-research" title="Permalink to this headline">¶</a></h3>
+<p>There are some emulation frameworks available on the Internet that targets
+devices that embed a Linux operating system (or similar):</p>
+<ul class="simple">
+<li>Firmadyne, an automated firmware emulation framework</li>
+<li>ARM-X, a training-oriented emulation framework developed by Saumil Shah</li>
+</ul>
+<p><em>Firmadyne</em> is interesting because it tries to automate everything, but it is
+also a huge limitation. We did not want an automated system, we were looking
+for an efficient emulation framework able to run custom-made virtual devices
+that don’t use the same configuration as the original ones.</p>
+<p><em>ARM-X</em> is an emulation designed by Saumil Shah, mostly using shell scripts to
+provide an emulation environment based on a host system that embeds a target
+system. The target system runs in its own environment and is therefore easy to
+analyze. However, the setup is quite complex and adding a new device is somehow
+challenging for non-experienced users. Moreover, adding or removing virtual
+devices is not straightforward, and this could be an issue for trainees.</p>
+<p>Well, for all these reasons it seemed obvious we needed another Qemu-based
+instrumentation framework.</p>
+</div>
+<div class="section" id="interesting-features">
+<h3>Interesting features<a class="headerlink" href="#interesting-features" title="Permalink to this headline">¶</a></h3>
+<p>Piotr has been designed to be used for IoT security trainings and security
+research, with the following features in mind:</p>
+<ul class="simple">
+<li>full-system qemu-based emulation environment</li>
+<li>easy setup, can be installed with pip</li>
+<li>import/export of virtual devices</li>
+<li>virtual device instances use temporary filesystems to avoid “bricking”</li>
+<li>emphasize on reusability (kernels, filesystems, etc.)</li>
+<li>network should be optional (no samba server, etc…)</li>
+</ul>
+</div>
+<div class="section" id="approach">
+<h3>Approach<a class="headerlink" href="#approach" title="Permalink to this headline">¶</a></h3>
+<p>The approach brought by <em>ARM-X</em> seems to be efficient and provide the best
+solution to emulate an embedded device and allow debugging and more at the
+same time. Piotr definitely relies on an architecture inspired from <em>ARM-X</em>.</p>
+</div>
+<div class="section" id="supported-architectures-and-platforms">
+<h3>Supported architectures and platforms<a class="headerlink" href="#supported-architectures-and-platforms" title="Permalink to this headline">¶</a></h3>
+<p>Since Piotr uses <em>Qemu</em>, it has the same limitations. Full-system emulation is
+available in <em>Qemu</em> for various architectures, but ARM seems to be the more
+mature architecture that provides a huge set of different platforms (vexpress,
+versatilepb, virt, etc.).</p>
+<p><em>Qemu</em> developers recommend to use the <cite>virt</cite> platform as it is the most
+flexible platform (while others have hardware limitations such as low RAM
+and limited buses).</p>
+<p>At the moment, the only supported architecture is ARM for the <cite>virt</cite> platform.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last"><em>Piotr</em> is designed to run on a Linux system, and has been only tested on this system so far.</p>
+</div>
+</div>
+</div>
+<div class="section" id="piotr-main-concepts">
+<h2>Piotr main concepts<a class="headerlink" href="#piotr-main-concepts" title="Permalink to this headline">¶</a></h2>
+<p><em>Piotr</em> manages three different types of components:</p>
+<ul class="simple">
+<li>host filesystems</li>
+<li>host Linux kernels</li>
+<li>virtual embedded devices</li>
+</ul>
+<p>This section describes these components and how they are managed by <em>Piotr</em>.</p>
+<div class="section" id="kernels-and-host-filesystems">
+<h3>Kernels and host filesystems<a class="headerlink" href="#kernels-and-host-filesystems" title="Permalink to this headline">¶</a></h3>
+<p>Piotr emulated devices rely on an emulated host system to run, and this host
+system uses a Linux kernel and an associated filesystem. We can design our
+own different kernels and host filesystems, and add them to Piotr.</p>
+<p>More than one virtual device may use the same host kernel and host filesystem,
+since they are shared amongst virtual devices.</p>
+<div class="section" id="host-filesystem">
+<h4>Host filesystem<a class="headerlink" href="#host-filesystem" title="Permalink to this headline">¶</a></h4>
+<p>Piotr host filesystem contains all the required system files required to boot
+the host system, and some extra tools that are required for analysis:</p>
+<ul class="simple">
+<li><cite>qemu-agent</cite> is provided in Piotr’s stock host filesystem and is required by many tools to interact with running instances</li>
+<li><cite>gdbserver</cite> is provided in Piotr’s stock host filesystem to allow remote debugging</li>
+</ul>
+<p>Some custom configuration files are also used to display the Piotr banner and allow root to login without password,
+or even set the prompt according to the running system (host ou emulated target, also called guest).</p>
+<p>Filesystems must be ext2 raw images, named as follows: <cite>&lt;platform&gt;-&lt;version string&gt;[-[optional tags]].ext2</cite>.
+At the moment, only the <cite>virt</cite> platform is supported.</p>
+<p>We can use <cite>piotr</cite> to list the registered filesystems:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>$ piotr fs list
+Installed host filesystems:
+
+  &gt; virt-1.0.1.ext2                     (version 1.0.1, type: ext2)
+
+1 filesystem(s) available
+</pre></div>
+</div>
+<p>Or register a new one:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>$ piotr fs add virt-1.0.2.ext2
+</pre></div>
+</div>
+<p>Filesystems are usually tied to specific kernel versions as they contain kernel modules
+that are loaded at boot time.</p>
+<p>Our host filesystems are stored in our <cite>Piotr</cite> local folder (<cite>$HOME/.piotr/fs/</cite>), as plain files.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If you don’t know what you are doing, just stick with the provided stock filesystem.</p>
+</div>
+</div>
+<div class="section" id="kernel">
+<h4>Kernel<a class="headerlink" href="#kernel" title="Permalink to this headline">¶</a></h4>
+<p>In the same manner, Piotr manages a list of Linux kernels that would be used to boot the host system
+but also to run the emulated device. It could be interesting to compile a custom kernel if some features
+are missing in the stock kernel, or if the emulated device is intended to be run on a specific version.</p>
+<p>Kernels are managed the same way the host filesystems are, using <cite>piotr</cite>. We can list the existing kernels
+by issuing the following command:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>$ piotr kernel list
+Installed kernels:
+
+&gt; zImage-4.14.131-virt
+  Linux version 4.14.131, platform: virt
+
+
+1 kernel(s) available
+</pre></div>
+</div>
+<p>kernels are named exactly the same way host filesystems are: <cite>zImage-&lt;version string&gt;-&lt;platform&gt;[-[optional tags]]</cite>.</p>
+<p>We can add or remove kernel with <cite>piotr</cite>, as shown below:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>$ piotr kernel add zImage
+$ piotr kernel add zImage-5.10.0-virt
+$ piotr kernel remove zImage-5.10.0-virt
+</pre></div>
+</div>
+<p>Our host kernels are stored in our <cite>Piotr</cite> local folder (<cite>$HOME/.piotr/kernels/</cite>), as plain files.</p>
+</div>
+</div>
+<div class="section" id="virtual-embedded-device">
+<h3>Virtual embedded device<a class="headerlink" href="#virtual-embedded-device" title="Permalink to this headline">¶</a></h3>
+<p>A virtual embedded device, as Piotr understands it, is a combination of the
+following:</p>
+<ul class="simple">
+<li>a Linux kernel</li>
+<li>a root filesystem</li>
+<li>an (optional) DTB file</li>
+<li>additional files,tools and scripts that are required by Piotr to start the emulated environment</li>
+</ul>
+<p>A virtual device is a template that would be used by Piotr to create virtualized
+environments that mimick a real device behavior.</p>
+<p>Here is an example of a device directory:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>dvar/
+  - /config.yaml
+  - /rootfs/
+</pre></div>
+</div>
+<div class="section" id="so-what-is-a-virtual-device-made-of">
+<h4>So, what is a virtual device made of ?<a class="headerlink" href="#so-what-is-a-virtual-device-made-of" title="Permalink to this headline">¶</a></h4>
+<p>Virtual devices are stored in our <cite>Piotr</cite> local folder (<cite>$HOME/.piotr/devices/</cite>),
+and each subfolder defines a virtual device.</p>
+<p>A virtual device subfolder contains a <cite>config.yaml</cite> file that describes the
+environment in which the virtual device must run. This configuration file tells
+<em>Piotr</em> how it should configure <em>Qemu</em> to correctly emulate the device, by
+specifying one or more human-readable options.</p>
+<p>A root filesystem is also provided (in a specific <cite>rootfs</cite> folder), containing
+the device root filesystem with the exact permissions and owners. That explains
+why <em>Piotr</em> needs administrative rights to boot a virtual device, as it must
+access this filesystem and manipulate it. That also means we may need root
+privileges to browse the content of this root filesystem.</p>
+<p>Extra folders may contain a custom linux kernel or a specific DTB file, depending
+on the device specifications. These files must be referenced in the <cite>config.yaml</cite>
+file located at the root of the device folder.</p>
+</div>
+<div class="section" id="running-a-virtual-device">
+<h4>Running a virtual device<a class="headerlink" href="#running-a-virtual-device" title="Permalink to this headline">¶</a></h4>
+<p><em>Piotr</em> does not directly run a device, as it could cause some issues if an
+unexpected error or mistake is made while it is running. In order to keep the
+device safe, <em>Piotr</em> creates a copy of the host filesystem and the device root
+filesystem as well, and then runs the device with these copies, avoiding any
+permanent damage to the original filesystems.</p>
+<p><em>Piotr</em> performs the following task in order to create an instance of a
+virtual device:</p>
+<ol class="arabic simple">
+<li>it parses the device’s <cite>config.yaml</cite> file</li>
+<li>it checks if a compatible host filesystem and kernel are available</li>
+<li>it then creates a copy of the host filesystem</li>
+<li>it launches <cite>qemu-system-arm</cite> with a options that are generated from the configuration</li>
+<li>when the device boots, it starts all the required services thanks to the host filesystem boot scripts</li>
+</ol>
+<p>Any modification brought to the host filesystem during the use of a
+virtual device won’t cause any change. However, any modification brought to
+the device filesystem will be persistent, except if a specific mode is used
+to mount this filesystem.</p>
+<p>Once a virtual device is running, <em>Piotr</em> refers to it as an <em>instance</em>.
+Instances of virtual devices can then be managed the same way as other <em>Piotr</em>
+components do, through <em>Piotr</em> command-line utility <cite>piotr</cite>.</p>
+<p>To create an instance of a virtual device, use the following command:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>$ sudo piotr device start dvar
+</pre></div>
+</div>
+<p>It will launch a virtual device from its template, and pick a random instance
+name. Running instances can be enumerated as follows:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>$ sudo piotr device running
+Running instances:
+
+  Instance name                           Device
+&gt; kind_hofstadter                         Damn Vulnerable ARM Router by Saumil Shah
+
+1 running instance(s)
+</pre></div>
+</div>
+<p>We can launch a virtual device with a specific instance name with the following
+command:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>$ sudo piotr device start dvar my-dvar-instance
+</pre></div>
+</div>
+<p>And of course, we can stop a running instance with the following command:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>$ sudo piotr device stop my-dvar-instance
+</pre></div>
+</div>
+<p>When a running instance is stopped, the duplicated host filesystem is removed
+once the virtual device shut off.</p>
+</div>
+<div class="section" id="exporting-a-virtual-device">
+<h4>Exporting a virtual device<a class="headerlink" href="#exporting-a-virtual-device" title="Permalink to this headline">¶</a></h4>
+<p>Piotr provides a way to export a specific virtual device, by packaging all the
+required dependencies into a single archive file in a way it can be shared and
+imported.</p>
+<p>The packaging process takes the following data and insert them into the archive:</p>
+<ul class="simple">
+<li>the device’s root filesystem (located in the <cite>rootfs</cite> directory of the device folder, under <cite>$HOME/.piotr/devices/</cite>)</li>
+<li>the device configuration file (<cite>config.yaml</cite>)</li>
+<li>the device kernel (from registered kernels or custom kernel, depending on the device configuration)</li>
+<li>the device host filesystem (from registered host filesystem or custom host file system if defined in the device configuration)</li>
+</ul>
+<p>Administrative rights are required in order to export a virtual device.</p>
+<p>To export a device, use the <cite>device export</cite> command, as shown below:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>$ sudo piotr device export davr davr.piotr
+</pre></div>
+</div>
+<p>This command exports a device named <cite>davr</cite> into the <cite>davr.piotr</cite> archive file.</p>
+</div>
+<div class="section" id="importing-a-virtual-device">
+<h4>Importing a virtual device<a class="headerlink" href="#importing-a-virtual-device" title="Permalink to this headline">¶</a></h4>
+<p>Importing a device basically takes an archive file created by the export feature, and installs everything at the right
+place:</p>
+<ul class="simple">
+<li>the device folder is created in the user Piotr’s local folder</li>
+<li>the root filesystem is extracted and stored in plain</li>
+<li>the device kernel is installed and registered if it is not one dedicated to this device</li>
+<li>the host filesystem is installed and registered if it is not one dedicated to this device</li>
+</ul>
+<p>The device is then ready to use, with all of its dependencies automatically installed. Kernel files and host
+filesystems installed and registered during import may be used to create new devices as well.</p>
+<p>To import a device, use the <cite>device add</cite> command as shown below:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>$ sudo piotr device add davr.piotr
+</pre></div>
+</div>
+</div>
+<div class="section" id="virtualizing-an-existing-embedded-device">
+<h4>Virtualizing an existing embedded device<a class="headerlink" href="#virtualizing-an-existing-embedded-device" title="Permalink to this headline">¶</a></h4>
+<p>If we plan to virtualize an embedded device, there are a few steps to follow.
+Each of these steps can fail for one reason or another, so there is no certainty
+that we would be able to virtualize a specific device:</p>
+<ul class="simple">
+<li>we must determine the version of its Linux kernel and the specific drivers it uses</li>
+<li>we must have a copy of the root filesystem of the device we want to emulate</li>
+<li>we must also determine how the system accesses (read/write) its non-volatile parameters</li>
+</ul>
+<p>Extracting the root filesystem is not straightforward, and in most cases it is
+split among multiple partitions that we would have to assemble to recover the
+actual root filesystem. Doing so would also mean modifying some configuration
+files or bootup scripts that are used to mount everything at the right place.</p>
+<p>Identifying the version of the kernel used by the device, as well as the custom
+drivers that should be loaded in order for the system to boot correctly may be
+challenging, depending on the system. Again, we would have to find some tricks
+to avoid using these drivers, when sometimes we would end up coding some fake
+drivers to make the system believes everything is normal while it is obviously
+not the case. It is sometimes better to stick to the expected linux kernel
+version, even if it causes some issues to the emulated host.</p>
+</div>
+</div>
+</div>
+<div class="section" id="creating-a-virtual-device">
+<h2>Creating a virtual device<a class="headerlink" href="#creating-a-virtual-device" title="Permalink to this headline">¶</a></h2>
+<p>Creating a virtual device from an existing real device requires to:</p>
+<ul class="simple">
+<li>extract or rebuild its root filesystem</li>
+<li>identify the underlying hardware (CPU, memory, etc.)</li>
+</ul>
+<div class="section" id="create-a-device-template">
+<h3>Create a device template<a class="headerlink" href="#create-a-device-template" title="Permalink to this headline">¶</a></h3>
+<p><cite>Piotr</cite> provides a command to create a default device template:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>$ sudo piotr device create my-device
+</pre></div>
+</div>
+<p>This will create a folder named <cite>my-device</cite> in your <cite>piotr</cite> device directory
+(i.e. <cite>~/.piotr/devices/</cite>), and populate it with a default configuration file
+and an empty <cite>rootfs</cite> directory.</p>
+<p>The device directory should look like this:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>device/
+    config.yaml
+    rootfs/
+</pre></div>
+</div>
+</div>
+<div class="section" id="rebuild-the-device-s-root-filesystem">
+<h3>Rebuild the device’s root filesystem<a class="headerlink" href="#rebuild-the-device-s-root-filesystem" title="Permalink to this headline">¶</a></h3>
+<p>The main idea is to rebuild the device’s root filesystem including its mounted
+partitions. For instance, if your device mounts <cite>/dev/mtdblock0</cite> to <cite>/usr</cite>, we
+have to manually copy the files present in the partition filesystem into <cite>/usr</cite>.</p>
+<p>Thus, we end up with a link-free filesystem similar to the one used by the device
+when it runs. This filesystem must be copied in the <cite>rootfs</cite> directory, in the
+corresponding device directory. We must perform this step as root, as we need to
+keep the correct permissions, user and group IDs in this filesystem.</p>
+</div>
+<div class="section" id="create-the-device-configuration-file">
+<h3>Create the device configuration file<a class="headerlink" href="#create-the-device-configuration-file" title="Permalink to this headline">¶</a></h3>
+<p>Once the root filesystem ready, we need to fill the <cite>config.yaml</cite> file present
+in the device directory.</p>
+<p>First, we set the target architecture (based on what was observed on the real
+hardware), as shown below:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">version</span><span class="p">:</span> <span class="s">&quot;1.0&quot;</span>
+<span class="nt">device</span><span class="p">:</span>
+<span class="hll">    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">My IoT device</span>
+</span><span class="hll">    <span class="nt">machine</span><span class="p">:</span>
+</span><span class="hll">        <span class="nt">platform</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">virt</span>
+</span><span class="hll">        <span class="nt">memory</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">1024M</span>
+</span></pre></div>
+</div>
+<p>The configuration above declares a device called “My IoT device” that will run
+on Qemu’s virt platform (the only currently supported by <cite>piotr</cite>), with 1024M
+of RAM.</p>
+<p>We then tells <cite>piotr</cite> which kernel to use and how to load the device root filesystem:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">version</span><span class="p">:</span> <span class="s">&quot;1.0&quot;</span>
+<span class="nt">device</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">My IoT device</span>
+    <span class="nt">machine</span><span class="p">:</span>
+        <span class="nt">platform</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">virt</span>
+        <span class="nt">memory</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">1024M</span>
+
+<span class="hll">    <span class="nt">kernel</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">4.14.131</span>
+</span><span class="hll">    <span class="nt">bootargs</span><span class="p">:</span> <span class="s">&quot;root=/dev/vda</span><span class="nv"> </span><span class="s">rw</span><span class="nv"> </span><span class="s">console=ttyAMA,115200&quot;</span>
+</span><span class="hll">    <span class="nt">guestfs</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">virtfs</span>
+</span></pre></div>
+</div>
+<p>We tell <cite>piotr</cite> to use a generic Linux kernel 4.14.131 (that ships with the latest
+version of <cite>piotr</cite>), we also provide some boot arguments (<cite>bootargs</cite>) which are
+pretty standard for Qemu’s virt platform, and asks for our device root filesystem
+to be loaded through Plan9 Resource Sharing protocol (9P2000). This last option
+can be omitted as it is the default behavior.</p>
+<p>However, you may want <cite>piotr</cite> not
+to use this sharing mechanism and therefore use <cite>embed</cite> instead of <cite>virtfs</cite>. In
+this case, <cite>piotr</cite> will use a copy of the device root filesystem and embed it
+into the host filesystem before running it.</p>
+<p>We have specified so far the machine architecture, hardware platform and the
+kernel to use (with its boot arguments). We may want to ask <cite>piotr</cite> to forward
+a TCP port to access our device SSH service for instance, through the following
+configuration:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">version</span><span class="p">:</span> <span class="s">&quot;1.0&quot;</span>
+<span class="nt">device</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">My IoT device</span>
+    <span class="nt">machine</span><span class="p">:</span>
+        <span class="nt">platform</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">virt</span>
+        <span class="nt">memory</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">1024M</span>
+
+    <span class="nt">kernel</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">4.14.131</span>
+    <span class="nt">bootargs</span><span class="p">:</span> <span class="s">&quot;root=/dev/vda</span><span class="nv"> </span><span class="s">rw</span><span class="nv"> </span><span class="s">console=ttyAMA,115200&quot;</span>
+    <span class="nt">guestfs</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">virtfs</span>
+
+<span class="hll">    <span class="nt">network</span><span class="p">:</span>
+</span><span class="hll">        <span class="nt">nic0</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">user</span>
+</span>
+<span class="hll">    <span class="nt">redirect</span><span class="p">:</span>
+</span><span class="hll">        <span class="nt">nic0</span><span class="p">:</span>
+</span><span class="hll">            <span class="nt">ssh</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">tcp,2222,22</span>
+</span></pre></div>
+</div>
+</div>
+<div class="section" id="creating-a-bootup-script">
+<h3>Creating a bootup script<a class="headerlink" href="#creating-a-bootup-script" title="Permalink to this headline">¶</a></h3>
+<p>When our emulated host will start our device in a <em>chrooted</em> environment, it
+will execute a specific script to start the device’s services. This script will
+act as an init script, without all the mountings and device specific tasks that
+will not work as expected, since it is absolutely not the real hardware.</p>
+<p>This script must be located in a <cite>piotr</cite> folder in the device root filesystem,
+and called <cite>init.sh</cite>. Below an example of such a script:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/bin/sh</span>
+
+<span class="c1"># Emulate sdcard (required if you are using the sdcard option in config.yaml)</span>
+mount -t ext2 /dev/vdb /mnt/sdcard
+
+<span class="c1"># Add devpts support (mandatory)</span>
+mount devpts /dev/pts -t devpts
+
+<span class="c1"># Config eth0 (if at least one network card has been declared)</span>
+ifconfig eth0 <span class="m">192</span>.168.100.2
+
+<span class="c1"># Start prerun program</span>
+<span class="c1"># (required to avoid errors due to emulation)</span>
+/mnt/mtd/prerun
+
+<span class="c1"># Set the guest shell prompt</span>
+<span class="nb">export</span> <span class="nv">PS1</span><span class="o">=</span><span class="s1">&#39;[Guest]# &#39;</span>
+
+<span class="c1"># Start a shell</span>
+sh
+</pre></div>
+</div>
+</div>
+<div class="section" id="booting-your-device">
+<h3>Booting your device<a class="headerlink" href="#booting-your-device" title="Permalink to this headline">¶</a></h3>
+<p>When we are done with the root filesystem, device configuration file and init
+script, we can give our emulated IoT device a try. We use <cite>piotr</cite> to start the
+device and the emulated host system boots up:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>$ sudo piotr device start ipcam
+Booting Linux on physical CPU 0x0
+[...]
+Serial: AMBA PL011 UART driver
+9000000.pl011: ttyAMA0 at MMIO 0x9000000 (irq = 54, base_baud = 0) is a PL011 rev1
+console [ttyAMA0] enabled
+SCSI subsystem initialized
+[...]
+NET: Registered protocol family 17
+9pnet: Installing 9P2000 support
+Registering SWP/SWPB emulation handler
+rtc-pl031 9010000.pl031: setting system clock to 2021-06-30 08:58:11 UTC (1625043491)
+ALSA device list:
+No soundcards found.
+EXT4-fs (vda): mounted filesystem without journal. Opts: (null)
+VFS: Mounted root (ext4 filesystem) on device 254:0.
+devtmpfs: mounted
+Freeing unused kernel memory: 1024K
+Run /sbin/init as init process
+EXT4-fs (vda): re-mounted. Opts: (null)
+Starting syslogd: OK
+Starting klogd: OK
+Running sysctl: OK
+Saving random seed: random: dd: uninitialized urandom read (512 bytes read)
+OK
+Starting network: OK
+Starting dhcpcd...
+no interfaces have a carrier
+forked to background, child pid 713
+Starting ser2net: no configuration file
+Starting qemu agent...
+random: dhcpcd: uninitialized urandom read (120 bytes read)
+
+
+██████╗ ██╗ ██████╗ ████████╗██████╗
+██╔══██╗██║██╔═══██╗╚══██╔══╝██╔══██╗
+██████╔╝██║██║   ██║   ██║   ██████╔╝
+██╔═══╝ ██║██║   ██║   ██║   ██╔══██╗
+██║     ██║╚██████╔╝   ██║   ██║  ██║
+╚═╝     ╚═╝ ╚═════╝    ╚═╝   ╚═╝  ╚═╝
+
+    -----&lt; version 1.0.0 &gt;-----
+
+piotr login:
+</pre></div>
+</div>
+<p>We log in with the <cite>root</cite> username (no password required), and then start the
+guest:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>[Host]# target-start
+random: fast init done
+Can&#39;t open /dev/akgpio
+: No such file or directory
+GPIO dev not init!!!
+=== Start no-auth telnetd server ===
+open /dev/akpcm_cdev0 failed: No such file or directory.
+=== play type : 0 ===
+GPIO dev not init!!!
+Can&#39;t open /dev/akgpio
+: No such file or directory
+otg_hs: version magic &#39;3.4.35 mod_unload ARMv5 &#39; should be &#39;4.19.91 SMP mod_unload ARMv7 p2v8 &#39;
+insmod: can&#39;t insert &#39;/mvs/modules/otg-hs.ko&#39;: invalid module format
+[Guest]#
+</pre></div>
+</div>
+<p>A single device cannot be found (<cite>/dev/akgpio</cite>) and some drivers could not be loaded due to
+a wrong kernel version used to start the target system, but it boots up and runs all the
+network services we want to test.</p>
+<p>We may also compile a Linux kernel for the exact same architecture and create a
+compatible host filesystem. As one can see, Linux version 3.4.35 is required here.</p>
+<p>However, emulating real hardware such as GPIOs or even a CCCD sensor will be
+very difficult and this demonstrates the limits of emulation.</p>
+</div>
+</div>
+<div class="section" id="using-a-custom-kernel-and-host-root-filesystem">
+<h2>Using a custom kernel and host root filesystem<a class="headerlink" href="#using-a-custom-kernel-and-host-root-filesystem" title="Permalink to this headline">¶</a></h2>
+<p>As shown above, some devices may require dedicated configurations that do not fit
+the standard use. In this case, it is recommended to create a kernel specifically
+for a device, along with a compatible host filesystem.</p>
+<div class="section" id="prerequisites">
+<h3>Prerequisites<a class="headerlink" href="#prerequisites" title="Permalink to this headline">¶</a></h3>
+<p>We need a framework to build a kernel and a root filesystem: <cite>buildroot</cite>. <cite>Buildroot</cite>
+provides a very convenient way to compile kernels and create a root filesystem.</p>
+<p>It is usually available in the main Linux distributions application repositories,
+or can be downloaded from its website (<a class="reference external" href="https://buildroot.org">https://buildroot.org</a>).</p>
+</div>
+<div class="section" id="building-a-kernel-for-piotr">
+<h3>Building a kernel for Piotr<a class="headerlink" href="#building-a-kernel-for-piotr" title="Permalink to this headline">¶</a></h3>
+<p>If we need a specific kernel version for a virtual device, we will build one that
+fits our needs with buildroot. This section is not intended to be a complete guide
+for <cite>buildroot</cite>, but will cover the specifics required to compile a kernel compatible
+with Piotr.</p>
+<p>In order to use all the required features, <cite>buildroot</cite>’s toolchain must support
+WCHAR and C++.</p>
+<div class="section" id="kernel-configuration">
+<h4>Kernel configuration<a class="headerlink" href="#kernel-configuration" title="Permalink to this headline">¶</a></h4>
+<p>First, you must configure <cite>buildroot</cite> to build a compatible kernel and filesystem
+for a Qemu ARM architecture compatible with Qemu’s <em>virt</em> platform:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>$ make qemu_arm_versatile_defconfig
+</pre></div>
+</div>
+<p>For recent Linux kernel versions, Plan 9 resource sharing support (9P2000) must
+be enabled. In <cite>buildroot</cite>, the kernel configuration is done through a text-based
+interface:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>$ make linux-menuconfig
+</pre></div>
+</div>
+<p>First, enable <em>Plan 9 Resource Sharing Support</em> in <em>Networking support</em>.
+Then in <em>Filesystems</em> &gt; <em>Network File Systems</em>, make sure <em>Plan 9 Resource Sharing Support
+(9P2000)</em> is enabled. 9P POSIX ACLs or security labels may be enabled, but are
+not mandatory.</p>
+<p>By default, <cite>buildroot</cite> enables all the required options for Qemu, and it would
+do the job for recent versions of Linux kernel. If you plan to use older versions
+of Linux kernel, it may be challenging to get buildroot to compile it as it may
+require older versions of gcc that may be incompatible. Moreover, please consider
+using the <cite>embed</cite> option in your YAML device configuration file for option
+<cite>device.guestfs</cite> rather than <cite>virtfs</cite>.</p>
+</div>
+<div class="section" id="compilation">
+<h4>Compilation<a class="headerlink" href="#compilation" title="Permalink to this headline">¶</a></h4>
+<p>Once your kernel configured, run the following command to compile it:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>$ make linux
+</pre></div>
+</div>
+<p>Buildroot will compile the selected kernel version and will produce
+a <cite>zImage</cite> file in the <cite>output/images/</cite> folder. Rename this file as
+follows:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>$ mv output/images/zImage /tmp/virt.cortex-a7.little-5.10.7
+</pre></div>
+</div>
+<p>The expected pattern is <cite>platform.cpu.endianness-x.y.z</cite>, you must comply with it
+in order to be able to register/install this kernel into Piotr’s kernels.</p>
+</div>
+<div class="section" id="installation">
+<h4>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h4>
+<p>Use <cite>piotr</cite> to install your kernel. It will be copied into Piotr’s kernels
+folder and automatically available.</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>$ sudo piotr kernel add /tmp/virt.cortex-a7.little-5.10.7
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="building-a-root-filesystem">
+<h3>Building a root filesystem<a class="headerlink" href="#building-a-root-filesystem" title="Permalink to this headline">¶</a></h3>
+<p>Using <cite>buildroot</cite>, it is possible to create a root filesystem that provides
+everything required to host our target device filesystem.</p>
+<div class="section" id="mandatory-tools-required-by-piotr">
+<h4>Mandatory tools required by Piotr<a class="headerlink" href="#mandatory-tools-required-by-piotr" title="Permalink to this headline">¶</a></h4>
+<p><cite>Buildroot</cite> allows the following applications to be built and installed in
+the target root filesystem, under the <em>Target packages</em> submenu when
+configuring <cite>buildroot</cite>:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>$ make menuconfig
+</pre></div>
+</div>
+<ul class="simple">
+<li><cite>gdb</cite> and <cite>gdbserver</cite> (requires a toolchain that supports c++, wchar_t, threads and thread debugging)</li>
+<li>Qemu guest agent (<cite>qemu-ga</cite>) provided by the “Qemu tools” package</li>
+</ul>
+<p>These are mandatory, but we may also install for convenience:</p>
+<ul class="simple">
+<li>nano as a text editor</li>
+<li>filesystems utilities (squashfs, e2fsprogs, etc.)</li>
+<li>python3</li>
+</ul>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Use the same toolchain as you would do for the corresponding kernel, in order to
+build executable files that will run under the target architecture !</p>
+</div>
+</div>
+<div class="section" id="creating-the-root-filesystem">
+<h4>Creating the root filesystem<a class="headerlink" href="#creating-the-root-filesystem" title="Permalink to this headline">¶</a></h4>
+<p>Once <cite>buildroot</cite> configured, just use <cite>make</cite> to build the filesystem:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>$ make
+</pre></div>
+</div>
+<p>The generated filesystem is available in <cite>output/images/rootfs.ext2</cite> and is ready
+to be modified, because we need to add Piotr’s host filesystem files.</p>
+<p>We mount this filesystem on a mountpoint, and then add the required files:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span># mkdir /tmp/fs
+# mount -t ext2 ./output/images/rootfs.ext2 /tmp/fs
+# cp -rf &lt;piotr dir&gt;/hostfs-template/* /tmp/fs/
+# umount /tmp/fs
+</pre></div>
+</div>
+<p>Eventually, we rename this root filesystem following the expected pattern:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span># mv ./output/images/rootfs.ext2 /tmp/virt.cortex-a7.little-1.0.0.ext2
+</pre></div>
+</div>
+<p>And we add it to our stock host filesystem using <cite>piotr</cite>:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>$ sudo piotr add /tmp/virt.cortex-a7.little-1.0.0.ext2
+</pre></div>
+</div>
+<p>And this host filesystem is then installed and available.</p>
+</div>
+</div>
+</div>
+<div class="section" id="api">
+<h2>API<a class="headerlink" href="#api" title="Permalink to this headline">¶</a></h2>
+<p>Since <em>Piotr</em> is a python-framework, it exposes an API that can be used to
+automate tasks such as:</p>
+<ul class="simple">
+<li>starting and stopping an instance of a virtual device</li>
+<li>executing commands on the emulated host system or the target that runs in it</li>
+<li>enumerating processes on the emulated device</li>
+<li>debugging remote processes</li>
+</ul>
+<div class="section" id="importing-piotr-api">
+<h3>Importing Piotr API<a class="headerlink" href="#importing-piotr-api" title="Permalink to this headline">¶</a></h3>
+<p>Piotr API is imported in Python with the following code:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">piotr.api</span> <span class="kn">import</span> <span class="o">*</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="creating-and-accessing-a-virtual-device">
+<h3>Creating and accessing a virtual device<a class="headerlink" href="#creating-and-accessing-a-virtual-device" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="starting-a-virtual-device">
+<h4>Starting a virtual device<a class="headerlink" href="#starting-a-virtual-device" title="Permalink to this headline">¶</a></h4>
+<p>To create and start an instance of a virtual device, we must first get a <a class="reference internal" href="api.html#piotr.api.Device" title="piotr.api.Device"><code class="xref py py-class docutils literal notranslate"><span class="pre">Device</span></code></a>
+object corresponding to the device we want to instanciate:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">device</span> <span class="o">=</span> <span class="n">Device</span><span class="p">(</span><span class="s1">&#39;dvar&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Then, we can create an instance by calling <a class="reference internal" href="api.html#piotr.api.Device.run" title="piotr.api.Device.run"><code class="xref py py-meth docutils literal notranslate"><span class="pre">run()</span></code></a> as shown below:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">instance</span> <span class="o">=</span> <span class="n">device</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">alias</span><span class="o">=</span><span class="s1">&#39;my-instance&#39;</span><span class="p">,</span> <span class="n">background</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The call to <a class="reference internal" href="api.html#piotr.api.Device.run" title="piotr.api.Device.run"><code class="xref py py-meth docutils literal notranslate"><span class="pre">run()</span></code></a> returns an <a class="reference internal" href="api.html#piotr.api.Instance" title="piotr.api.Instance"><code class="xref py py-class docutils literal notranslate"><span class="pre">Instance</span></code></a> object that represents the running
+virtual device.</p>
+</div>
+<div class="section" id="retrieving-a-running-instance">
+<h4>Retrieving a running instance<a class="headerlink" href="#retrieving-a-running-instance" title="Permalink to this headline">¶</a></h4>
+<p>Piotr allows us to enumerate the running instances, by using <a class="reference internal" href="api.html#piotr.api.Piotr" title="piotr.api.Piotr"><code class="xref py py-class docutils literal notranslate"><span class="pre">Piotr</span></code></a> and its <a class="reference internal" href="api.html#piotr.api.Piotr.instances" title="piotr.api.Piotr.instances"><code class="xref py py-meth docutils literal notranslate"><span class="pre">instances()</span></code></a>
+method:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">instance</span> <span class="ow">in</span> <span class="n">Piotr</span><span class="o">.</span><span class="n">instances</span><span class="p">():</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">instance</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>A specific running instance can be retrieved with its instance name, using <a class="reference internal" href="api.html#piotr.api.Piotr.instance" title="piotr.api.Piotr.instance"><code class="xref py py-meth docutils literal notranslate"><span class="pre">instance()</span></code></a>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">instance</span> <span class="o">=</span> <span class="n">Piotr</span><span class="o">.</span><span class="n">instance</span><span class="p">(</span><span class="s1">&#39;my-instance&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="managing-processes">
+<h3>Managing processes<a class="headerlink" href="#managing-processes" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="creating-a-process">
+<h4>Creating a process<a class="headerlink" href="#creating-a-process" title="Permalink to this headline">¶</a></h4>
+<p>We can create a process that will run inside the host system by calling <a class="reference internal" href="api.html#piotr.api.Instance.exec_host" title="piotr.api.Instance.exec_host"><code class="xref py py-meth docutils literal notranslate"><span class="pre">exec_host()</span></code></a>,
+as shown below:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Launch /usr/bin/example on host system and in background</span>
+<span class="n">pid</span> <span class="o">=</span> <span class="n">instance</span><span class="o">.</span><span class="n">exec_host</span><span class="p">(</span><span class="s1">&#39;/usr/bin/example&#39;</span><span class="p">,</span> <span class="n">wait</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>We may also want to start a process in the context of the target system, by
+using <a class="reference internal" href="api.html#piotr.api.Instance.exec_target" title="piotr.api.Instance.exec_target"><code class="xref py py-meth docutils literal notranslate"><span class="pre">exec_target()</span></code></a>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Launch /usr/bin/example on target system, and in background</span>
+<span class="n">pid</span> <span class="o">=</span> <span class="n">instance</span><span class="o">.</span><span class="n">exec_target</span><span class="p">(</span><span class="s1">&#39;/usr/bin/example&#39;</span><span class="p">,</span> <span class="n">wait</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="enumerating-processes">
+<h4>Enumerating processes<a class="headerlink" href="#enumerating-processes" title="Permalink to this headline">¶</a></h4>
+<p>It is then possible to enumerate the running processes on this instance:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">process</span> <span class="ow">in</span> <span class="n">instance</span><span class="o">.</span><span class="n">ps</span><span class="p">():</span>
+    <span class="k">print</span><span class="p">(</span><span class="s1">&#39;PID:</span><span class="si">%d</span><span class="s1"> - </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">process</span><span class="o">.</span><span class="n">pid</span><span class="p">,</span> <span class="n">process</span><span class="o">.</span><span class="n">path</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="finding-a-process-pid">
+<h4>Finding a process PID<a class="headerlink" href="#finding-a-process-pid" title="Permalink to this headline">¶</a></h4>
+<p>If we want to find the PID of an executable based on its path, use <a class="reference internal" href="api.html#piotr.api.Instance.pid" title="piotr.api.Instance.pid"><code class="xref py py-meth docutils literal notranslate"><span class="pre">pid()</span></code></a> method
+with the search executable path:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">pid</span> <span class="o">=</span> <span class="n">instance</span><span class="o">.</span><span class="n">pid</span><span class="p">(</span><span class="s1">&#39;/usr/bin/example&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Since target and host processes are available from the host system, we do not
+have to specify on which system the process we are looking for is ran.</p>
+</div>
+<div class="section" id="terminating-a-process">
+<h4>Terminating a process<a class="headerlink" href="#terminating-a-process" title="Permalink to this headline">¶</a></h4>
+<p>To terminate a process, just call the <a class="reference internal" href="api.html#piotr.api.Instance.kill" title="piotr.api.Instance.kill"><code class="xref py py-meth docutils literal notranslate"><span class="pre">kill()</span></code></a> method as shown below:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">pid</span> <span class="o">=</span> <span class="n">instance</span><span class="o">.</span><span class="n">pid</span><span class="p">(</span><span class="s1">&#39;/usr/bin/example&#39;</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">pid</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">and</span> <span class="n">pid</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">:</span>
+    <span class="n">instance</span><span class="o">.</span><span class="n">kill</span><span class="p">(</span><span class="n">pid</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="remote-debugging-a-process">
+<h3>Remote debugging a process<a class="headerlink" href="#remote-debugging-a-process" title="Permalink to this headline">¶</a></h3>
+<p>It is also possible to attach a <cite>gdbserver</cite> to a process running in the host or target system,
+and then to interact with this server. First, we need to debug a specific running process:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">target_pid</span> <span class="o">=</span> <span class="n">instance</span><span class="o">.</span><span class="n">pid</span><span class="p">(</span><span class="s1">&#39;/bin/my-target-program&#39;</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">target_pid</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+    <span class="n">dbg</span> <span class="o">=</span> <span class="n">instance</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">target_pid</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The <a class="reference internal" href="api.html#piotr.api.Instance.debug" title="piotr.api.Instance.debug"><code class="xref py py-meth docutils literal notranslate"><span class="pre">debug()</span></code></a> method starts a <cite>gdbserver</cite> instance, attach it to the target
+process, and returns a <a class="reference internal" href="api.html#piotr.api.Debugger" title="piotr.api.Debugger"><code class="xref py py-class docutils literal notranslate"><span class="pre">Debugger</span></code></a> object. This object drives a <cite>gdb</cite> debugger and
+allows to:</p>
+<ul class="simple">
+<li>access the remote process registers</li>
+<li>access the remote process memory</li>
+<li>set and remove breakpoints</li>
+<li>run, single step and stop execution</li>
+</ul>
+<div class="section" id="controlling-the-execution">
+<h4>Controlling the execution<a class="headerlink" href="#controlling-the-execution" title="Permalink to this headline">¶</a></h4>
+<p>Once our debugger attached, the process is stopped. We can set a breakpoint at a specific address:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Set breakpoint at address 0x11e8</span>
+<span class="n">dbg</span><span class="o">.</span><span class="n">set_breakpoint</span><span class="p">(</span><span class="mh">0x11e8</span><span class="p">)</span>
+
+<span class="c1"># Continue execution</span>
+<span class="n">dbg</span><span class="o">.</span><span class="n">cont</span><span class="p">()</span>
+
+<span class="c1"># Wait for breakpoint to be reached</span>
+<span class="n">dbg</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="accessing-and-modifying-registers">
+<h4>Accessing and modifying registers<a class="headerlink" href="#accessing-and-modifying-registers" title="Permalink to this headline">¶</a></h4>
+<p>Registers can be read with the <a class="reference internal" href="api.html#piotr.api.Debugger.read_register" title="piotr.api.Debugger.read_register"><code class="xref py py-meth docutils literal notranslate"><span class="pre">read_register()</span></code></a> method, and written with the <code class="xref py py-meth docutils literal notranslate"><span class="pre">write_register()</span></code> method:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Show PC</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;PC: 0x</span><span class="si">%08x</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">dbg</span><span class="o">.</span><span class="n">read_register</span><span class="p">(</span><span class="s1">&#39;pc&#39;</span><span class="p">))</span>
+
+<span class="c1"># Modify PC</span>
+<span class="n">dbg</span><span class="o">.</span><span class="n">write_register</span><span class="p">(</span><span class="s1">&#39;pc&#39;</span><span class="p">,</span> <span class="mh">0x11f4</span><span class="p">)</span>
+
+<span class="c1"># Continue execution</span>
+<span class="n">dbg</span><span class="o">.</span><span class="n">cont</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="stopping-a-running-instance">
+<h3>Stopping a running instance<a class="headerlink" href="#stopping-a-running-instance" title="Permalink to this headline">¶</a></h3>
+<p>Just call the <a class="reference internal" href="api.html#piotr.api.Instance.stop" title="piotr.api.Instance.stop"><code class="xref py py-meth docutils literal notranslate"><span class="pre">stop()</span></code></a> method to stop a running instance:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">instance</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="api.html" class="btn btn-neutral float-right" title="API Reference" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="quickstart.html" class="btn btn-neutral float-left" title="Quickstart" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, Damien Cauquil.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

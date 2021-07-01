@@ -1,0 +1,745 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html4" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>piotr.api &mdash; piotr 1.0.0 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> piotr
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../concepts.html">What is Piotr ?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../install.html">Setup instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../manual.html">Reference manual</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API Reference</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">piotr</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>piotr.api</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for piotr.api</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Piotr API</span>
+
+<span class="sd">This module allows to interact with/instrument Piotr virtual devices in a</span>
+<span class="sd">pythonic way. It exposes a main class, :py:class:`Piotr`, that is able to</span>
+<span class="sd">interact with running instances and to automate things.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">signal</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">os</span> <span class="k">import</span> <span class="n">kill</span>
+<span class="kn">from</span> <span class="nn">os.path</span> <span class="k">import</span> <span class="n">basename</span>
+<span class="kn">from</span> <span class="nn">time</span> <span class="k">import</span> <span class="n">sleep</span>
+<span class="kn">from</span> <span class="nn">piotr.cmdline</span> <span class="k">import</span> <span class="n">CmdlineModule</span><span class="p">,</span> <span class="n">module</span><span class="p">,</span> <span class="n">command</span>
+<span class="kn">from</span> <span class="nn">piotr.user</span> <span class="k">import</span> <span class="n">UserDirectory</span> <span class="k">as</span> <span class="n">ud</span>
+<span class="kn">from</span> <span class="nn">piotr.util</span> <span class="k">import</span> <span class="n">confirm</span><span class="p">,</span> <span class="n">enforce_root</span>
+<span class="kn">from</span> <span class="nn">piotr.qemu</span> <span class="k">import</span> <span class="n">QemuGuestEnum</span><span class="p">,</span> <span class="n">QemuPlatforms</span>
+<span class="kn">from</span> <span class="nn">piotr.qemu.guest</span> <span class="k">import</span> <span class="n">QemuGuest</span><span class="p">,</span> <span class="n">QemuGuestNotFound</span>
+<span class="kn">from</span> <span class="nn">piotr.device</span> <span class="k">import</span> <span class="n">Device</span> <span class="k">as</span> <span class="n">_Device</span><span class="p">,</span> <span class="n">create_device</span>
+<span class="kn">from</span> <span class="nn">piotr.package</span> <span class="k">import</span> <span class="n">package_create</span><span class="p">,</span> <span class="n">package_import</span><span class="p">,</span> <span class="n">BadPackageError</span>
+<span class="kn">from</span> <span class="nn">piotr.exceptions</span> <span class="k">import</span> <span class="n">DeviceConfigError</span>
+
+<span class="n">GDB_PROT_DONE</span> <span class="o">=</span> <span class="s1">&#39;done&#39;</span>
+<span class="n">GDB_PROT_CONN</span> <span class="o">=</span> <span class="s1">&#39;connected&#39;</span>
+<span class="n">GDB_PROT_RUN</span> <span class="o">=</span> <span class="s1">&#39;running&#39;</span>
+
+<div class="viewcode-block" id="DeviceNotFound"><a class="viewcode-back" href="../../api.html#piotr.api.DeviceNotFound">[docs]</a><span class="k">class</span> <span class="nc">DeviceNotFound</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="k">pass</span></div>
+
+<span class="c1"># import avatar2 if available</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">avatar2.protocols.gdb</span> <span class="k">import</span> <span class="n">GDBProtocol</span>
+    <span class="kn">from</span> <span class="nn">avatar2.targets</span> <span class="k">import</span> <span class="n">TargetStates</span>
+    <span class="kn">from</span> <span class="nn">avatar2.message</span> <span class="k">import</span> <span class="n">AvatarMessage</span><span class="p">,</span> <span class="n">UpdateStateMessage</span><span class="p">,</span> <span class="n">BreakpointHitMessage</span>
+    
+    <span class="n">use_avatar2</span> <span class="o">=</span> <span class="kc">True</span>
+
+    <span class="k">class</span> <span class="nc">Debugger</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;This class is a wrapper for avatar2&#39;s GDBProtocol class that will handle</span>
+<span class="sd">        gdb-multiarch.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">TARGET_UNKNOWN</span><span class="o">=-</span><span class="mi">1</span>
+        <span class="n">TARGET_STOPPED</span><span class="o">=</span><span class="mi">0</span>
+        <span class="n">TARGET_RUNNING</span><span class="o">=</span><span class="mi">1</span>
+        <span class="n">TARGET_EXITED</span><span class="o">=</span><span class="mi">2</span>
+
+        <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inst_name</span><span class="p">,</span> <span class="n">pid</span><span class="p">,</span> <span class="n">ip</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="mi">4444</span><span class="p">,</span> <span class="n">gdb</span><span class="o">=</span><span class="s1">&#39;gdb-multiarch&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;gdb-</span><span class="si">%s</span><span class="s1">-</span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">inst_name</span><span class="p">,</span> <span class="n">pid</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">TARGET_UNKNOWN</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__dbg_ip</span> <span class="o">=</span> <span class="s1">&#39;127.0.0.1&#39;</span> <span class="k">if</span> <span class="n">ip</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">ip</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__port</span> <span class="o">=</span> <span class="n">port</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__debugger</span> <span class="o">=</span> <span class="n">GDBProtocol</span><span class="p">(</span>
+                <span class="n">origin</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span>
+                <span class="n">gdb_executable</span><span class="o">=</span><span class="n">gdb</span><span class="p">,</span>
+                <span class="n">async_message_handler</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">on_debugger_msg</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__debugger</span><span class="o">.</span><span class="n">remote_connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__dbg_ip</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__port</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__pid</span> <span class="o">=</span> <span class="n">pid</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__gdb_executable</span> <span class="o">=</span> <span class="n">gdb</span>
+
+
+        <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">return</span> <span class="s1">&#39;Debugger(pid=</span><span class="si">%d</span><span class="s1">, gdb=&quot;</span><span class="si">%s</span><span class="s1">&quot;, ip=&quot;&quot;, port=</span><span class="si">%d</span><span class="s1">)&#39;</span> <span class="o">%</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__pid</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__gdb_executable</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">dbg_ip</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__port</span>
+            <span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="Debugger.on_debugger_msg"><a class="viewcode-back" href="../../api.html#piotr.api.Debugger.on_debugger_msg">[docs]</a>        <span class="k">def</span> <span class="nf">on_debugger_msg</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;Process async message sent by gdb</span>
+
+<span class="sd">            :param message: message</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">UpdateStateMessage</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">message</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="n">TargetStates</span><span class="o">.</span><span class="n">RUNNING</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">TARGET_RUNNING</span>
+                <span class="k">elif</span> <span class="n">message</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="n">TargetStates</span><span class="o">.</span><span class="n">STOPPED</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">TARGET_STOPPED</span>
+                <span class="k">elif</span> <span class="n">message</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="n">TargetStates</span><span class="o">.</span><span class="n">EXITED</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">TARGET_EXITED</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">BreakpointHitMessage</span><span class="p">):</span>
+                <span class="c1"># breakpoint has been hit, target is stopped</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">TARGET_STOPPED</span></div>
+
+<div class="viewcode-block" id="Debugger.wait"><a class="viewcode-back" href="../../api.html#piotr.api.Debugger.wait">[docs]</a>        <span class="k">def</span> <span class="nf">wait</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">blocking</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;Wait for target to be stopped.&quot;&quot;&quot;</span>
+            <span class="k">while</span> <span class="n">blocking</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">TARGET_STOPPED</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">TARGET_EXITED</span><span class="p">:</span>
+                    <span class="k">break</span>
+                <span class="n">sleep</span><span class="p">(</span><span class="mf">0.001</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Debugger.cont"><a class="viewcode-back" href="../../api.html#piotr.api.Debugger.cont">[docs]</a>        <span class="k">def</span> <span class="nf">cont</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">blocking</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;Continue execution.&quot;&quot;&quot;</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__debugger</span><span class="o">.</span><span class="n">cont</span><span class="p">():</span>
+                <span class="k">while</span> <span class="n">blocking</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">TARGET_RUNNING</span><span class="p">:</span>
+                        <span class="k">break</span>
+                    <span class="n">sleep</span><span class="p">(</span><span class="mf">0.001</span><span class="p">)</span>
+                <span class="k">return</span> <span class="kc">True</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">False</span></div>
+
+<div class="viewcode-block" id="Debugger.stop"><a class="viewcode-back" href="../../api.html#piotr.api.Debugger.stop">[docs]</a>        <span class="k">def</span> <span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;Stop execution of target.&quot;&quot;&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__debugger</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Debugger.set_abi"><a class="viewcode-back" href="../../api.html#piotr.api.Debugger.set_abi">[docs]</a>        <span class="k">def</span> <span class="nf">set_abi</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">abi</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;Set ABI.&quot;&quot;&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__debugger</span><span class="o">.</span><span class="n">set_abi</span><span class="p">(</span><span class="n">abi</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Debugger.set_breakpoint"><a class="viewcode-back" href="../../api.html#piotr.api.Debugger.set_breakpoint">[docs]</a>        <span class="k">def</span> <span class="nf">set_breakpoint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">line</span><span class="p">,</span> <span class="n">hardware</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">temporary</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">regex</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">condition</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ignore_count</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">thread</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">pending</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;Inserts a breakpoint</span>
+
+<span class="sd">            :param hardware: Hardware breakpoint</span>
+<span class="sd">            :type hardware: bool</span>
+<span class="sd">            :param temporary: Tempory breakpoint</span>
+<span class="sd">            :type temporary: bool</span>
+<span class="sd">            :param regex: If set, inserts breakpoints matching the regex</span>
+<span class="sd">            :type regex: str</span>
+<span class="sd">            :param condition: If set, inserts a breakpoint with specified condition</span>
+<span class="sd">            :type condition: str</span>
+<span class="sd">            :param ignore_count: Amount of times the bp should be ignored</span>
+<span class="sd">            :type ignore_count: int</span>
+<span class="sd">            :param thread: Threadno in which this breakpoints should be added</span>
+<span class="sd">            :type thread: int</span>
+<span class="sd">            :returns: The number of the breakpoint</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">debugger</span><span class="o">.</span><span class="n">set_breakpoint</span><span class="p">(</span>
+                <span class="n">line</span><span class="p">,</span>
+                <span class="n">hardware</span><span class="o">=</span><span class="n">hardware</span><span class="p">,</span>
+                <span class="n">temporary</span><span class="o">=</span><span class="n">temporary</span><span class="p">,</span>
+                <span class="n">regex</span><span class="o">=</span><span class="n">regex</span><span class="p">,</span>
+                <span class="n">condition</span><span class="o">=</span><span class="n">condition</span><span class="p">,</span>
+                <span class="n">ignore_count</span><span class="o">=</span><span class="n">ignore_count</span><span class="p">,</span>
+                <span class="n">thread</span><span class="o">=</span><span class="n">thread</span><span class="p">,</span>
+                <span class="n">pending</span><span class="o">=</span><span class="n">pending</span>
+            <span class="p">)</span></div>
+
+<div class="viewcode-block" id="Debugger.remove_breakpoint"><a class="viewcode-back" href="../../api.html#piotr.api.Debugger.remove_breakpoint">[docs]</a>        <span class="k">def</span> <span class="nf">remove_breakpoint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bkpt</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;Deletes a breakpoint&quot;&quot;&quot;</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__debugger</span><span class="o">.</span><span class="n">remove_breakpoint</span><span class="p">(</span><span class="n">bkpt</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Debugger.write_memory"><a class="viewcode-back" href="../../api.html#piotr.api.Debugger.write_memory">[docs]</a>        <span class="k">def</span> <span class="nf">write_memory</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">address</span><span class="p">,</span> <span class="n">wordsize</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="n">num_words</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;Writes memory</span>
+
+<span class="sd">            :param address:   Address to write to</span>
+<span class="sd">            :param wordsize:  the size of the write (1, 2, 4 or 8)</span>
+<span class="sd">            :param val: the written value</span>
+<span class="sd">            :type val:  int if num_words == 1 and raw == False</span>
+<span class="sd">                        list if num_words &gt; 1 and raw == False</span>
+<span class="sd">                        str or byte if raw == True</span>
+<span class="sd">            :param num_words: The amount of words to read</span>
+<span class="sd">            :param raw:       Specifies whether to write in raw or word mode</span>
+<span class="sd">            :returns:         True on success else False</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__debugger</span><span class="o">.</span><span class="n">write_memory</span><span class="p">(</span>
+                <span class="n">address</span><span class="p">,</span>
+                <span class="n">wordsize</span><span class="p">,</span>
+                <span class="n">val</span><span class="p">,</span>
+                <span class="n">num_words</span><span class="o">=</span><span class="n">num_words</span><span class="p">,</span>
+                <span class="n">raw</span><span class="o">=</span><span class="n">raw</span>
+            <span class="p">)</span></div>
+
+<div class="viewcode-block" id="Debugger.read_memory"><a class="viewcode-back" href="../../api.html#piotr.api.Debugger.read_memory">[docs]</a>        <span class="k">def</span> <span class="nf">read_memory</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">address</span><span class="p">,</span> <span class="n">wordsize</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">num_words</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;reads memory</span>
+<span class="sd">            :param address:   Address to write to</span>
+<span class="sd">            :param wordsize:  the size of a read word (1, 2, 4 or 8)</span>
+<span class="sd">            :param num_words: the amount of read words</span>
+<span class="sd">            :param raw:       Whether the read memory should be returned unprocessed</span>
+<span class="sd">            :return:          The read memory</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__debugger</span><span class="o">.</span><span class="n">read_memory</span><span class="p">(</span>
+                <span class="n">address</span><span class="p">,</span>
+                <span class="n">wordsize</span><span class="o">=</span><span class="n">wordsize</span><span class="p">,</span>
+                <span class="n">num_words</span><span class="o">=</span><span class="n">num_words</span><span class="p">,</span>
+                <span class="n">raw</span><span class="o">=</span><span class="n">raw</span>
+            <span class="p">)</span></div>
+
+<div class="viewcode-block" id="Debugger.read_register"><a class="viewcode-back" href="../../api.html#piotr.api.Debugger.read_register">[docs]</a>        <span class="k">def</span> <span class="nf">read_register</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reg</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;Read register&quot;&quot;&quot;</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__debugger</span><span class="o">.</span><span class="n">read_register</span><span class="p">(</span><span class="n">reg</span><span class="p">)</span></div>
+
+        <span class="k">def</span> <span class="nf">write_register</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reg</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__debugger</span><span class="o">.</span><span class="n">write_register</span><span class="p">(</span><span class="n">reg</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__debugger</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+
+        <span class="k">def</span> <span class="nf">console_command</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">,</span> <span class="n">rexpect</span><span class="o">=</span><span class="n">GDB_PROT_DONE</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__debugger</span><span class="o">.</span><span class="n">console_command</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">rexpect</span><span class="o">=</span><span class="n">rexpect</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">get_symbol</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">symbol</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__debugger</span><span class="o">.</span><span class="n">get_symbol</span><span class="p">(</span><span class="n">symbol</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">set_gdb_variable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">variable</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__debugger</span><span class="o">.</span><span class="n">set_gdb_variable</span><span class="p">(</span><span class="n">variable</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+
+
+        <span class="k">def</span> <span class="nf">set_fork_mode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;child&#39;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__debugger</span><span class="o">.</span><span class="n">set_gdb_variable</span><span class="p">(</span>
+                <span class="s1">&#39;follow-fork-mode&#39;</span><span class="p">,</span>
+                <span class="n">mode</span>
+            <span class="p">)</span>
+<span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+    <span class="n">use_avatar2</span> <span class="o">=</span> <span class="kc">False</span>
+
+<div class="viewcode-block" id="Debugger"><a class="viewcode-back" href="../../api.html#piotr.api.Debugger">[docs]</a>    <span class="k">class</span> <span class="nc">Debugger</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+        <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inst_name</span><span class="p">,</span> <span class="n">pid</span><span class="p">,</span> <span class="n">ip</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="mi">4444</span><span class="p">,</span> <span class="n">gdb</span><span class="o">=</span><span class="s1">&#39;gdb-multiarch&#39;</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Debugger class cannot be used because Avatar2 is not installed.&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Process"><a class="viewcode-back" href="../../api.html#piotr.api.Process">[docs]</a><span class="k">class</span> <span class="nc">Process</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;This class holds information about a process on the emulated system.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pid</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__pid</span> <span class="o">=</span> <span class="n">pid</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__user</span> <span class="o">=</span> <span class="n">user</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__path</span> <span class="o">=</span> <span class="n">path</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">&#39;Process(pid=</span><span class="si">%d</span><span class="s1">, user=&quot;</span><span class="si">%s</span><span class="s1">&quot;, path=&quot;</span><span class="si">%s</span><span class="s1">&quot;)&#39;</span> <span class="o">%</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__pid</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__user</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__user</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s1">&#39;?&#39;</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__path</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s1">&#39;?&#39;</span>
+        <span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">pid</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__pid</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">user</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__user</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">path</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__path</span></div>
+
+
+<div class="viewcode-block" id="Instance"><a class="viewcode-back" href="../../api.html#piotr.api.Instance">[docs]</a><span class="k">class</span> <span class="nc">Instance</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This class represents a Piotr running device instance and allows to interact</span>
+<span class="sd">    with it, execute commands into the emulated host and target (if Qemu agent</span>
+<span class="sd">    is supported by the device), enumerate and manipulate process.</span>
+
+<span class="sd">    :param pid: PID of Qemu instance</span>
+<span class="sd">    :type pid: int</span>
+<span class="sd">    :param device: Name of parent device, as referenced in Piotr devices list</span>
+<span class="sd">    :type device: str</span>
+<span class="sd">    :param sock: Socket file used to communicate with Qemu agent</span>
+<span class="sd">    :type sock: str</span>
+<span class="sd">    :param instName: Instance name, as referenced in Piotr running instances</span>
+<span class="sd">    :type instName: str</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pid</span><span class="p">,</span> <span class="n">device</span><span class="p">,</span> <span class="n">sock</span><span class="p">,</span> <span class="n">instName</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__pid</span> <span class="o">=</span> <span class="n">pid</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__device</span> <span class="o">=</span> <span class="n">Device</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__sock</span> <span class="o">=</span> <span class="n">sock</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__name</span> <span class="o">=</span> <span class="n">instName</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">debugger</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">&#39;Instance(name=&quot;</span><span class="si">%s</span><span class="s1">&quot;, device=&quot;</span><span class="si">%s</span><span class="s1">&quot;)&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__device</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">device</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__device</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__name</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">sock</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__sock</span>
+
+<div class="viewcode-block" id="Instance.stop"><a class="viewcode-back" href="../../api.html#piotr.api.Instance.stop">[docs]</a>    <span class="k">def</span> <span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Stop instance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># First, check if the running PID belong to one of our running devices</span>
+        <span class="c1"># Try to send the kill signal to this PID</span>
+        <span class="n">kill</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__pid</span><span class="p">,</span> <span class="n">signal</span><span class="o">.</span><span class="n">SIGTERM</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Instance.exec_host"><a class="viewcode-back" href="../../api.html#piotr.api.Instance.exec_host">[docs]</a>    <span class="k">def</span> <span class="nf">exec_host</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">command</span><span class="p">,</span> <span class="n">wait</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Execute a command in host.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">nibbles</span> <span class="o">=</span> <span class="n">command</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">nibbles</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">executable</span> <span class="o">=</span> <span class="n">nibbles</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">args</span> <span class="o">=</span> <span class="p">[</span><span class="n">arg</span> <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">nibbles</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">guest</span> <span class="o">=</span> <span class="n">QemuGuest</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__name</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">guest</span><span class="o">.</span><span class="n">run_command</span><span class="p">(</span><span class="n">executable</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">wait</span><span class="o">=</span><span class="n">wait</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="Instance.exec_target"><a class="viewcode-back" href="../../api.html#piotr.api.Instance.exec_target">[docs]</a>    <span class="k">def</span> <span class="nf">exec_target</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">command</span><span class="p">,</span> <span class="n">wait</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Execute a command in guest.</span>
+
+<span class="sd">        :param command: command to execute</span>
+<span class="sd">        :type command: str</span>
+<span class="sd">        :param return_output: wait for the process to end and return output</span>
+<span class="sd">        :type return_output: bool</span>
+<span class="sd">        :return: command output or executable PID</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">nibbles</span> <span class="o">=</span> <span class="n">command</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">nibbles</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">executable</span> <span class="o">=</span> <span class="n">nibbles</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">args</span> <span class="o">=</span> <span class="p">[</span><span class="n">arg</span> <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">nibbles</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">]</span>
+
+            <span class="n">guest</span> <span class="o">=</span> <span class="n">QemuGuest</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__name</span><span class="p">)</span>
+            <span class="n">guest_args</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;/target&#39;</span><span class="p">]</span>
+            <span class="n">guest_args</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="n">executable</span><span class="p">])</span>
+            <span class="n">guest_args</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">guest</span><span class="o">.</span><span class="n">run_command</span><span class="p">(</span>
+                <span class="s1">&#39;chroot&#39;</span><span class="p">,</span> <span class="n">guest_args</span><span class="p">,</span>
+                <span class="n">wait</span><span class="o">=</span><span class="n">wait</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Error.</span>
+            <span class="k">return</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="Instance.debug"><a class="viewcode-back" href="../../api.html#piotr.api.Instance.debug">[docs]</a>    <span class="k">def</span> <span class="nf">debug</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pid</span><span class="p">,</span> <span class="n">ip</span><span class="o">=</span><span class="s1">&#39;0.0.0.0&#39;</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="mi">4444</span><span class="p">,</span> <span class="n">gdb_executable</span><span class="o">=</span><span class="s1">&#39;gdb-multiarch&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Runs a gdb server and attaches it to a process.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Attach a gdbserver to the target PID</span>
+        <span class="n">guest</span> <span class="o">=</span> <span class="n">QemuGuest</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__name</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">guest</span><span class="o">.</span><span class="n">run_command</span><span class="p">(</span>
+            <span class="s1">&#39;gdbserver&#39;</span><span class="p">,</span> <span class="p">[</span>
+                <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">:</span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">ip</span><span class="p">,</span> <span class="n">port</span><span class="p">),</span>
+                <span class="s1">&#39;--attach&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;</span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">pid</span>
+            <span class="p">],</span>
+            <span class="n">wait</span><span class="o">=</span><span class="kc">False</span>
+        <span class="p">)</span>
+
+        <span class="c1"># is it a fail ?</span>
+        <span class="k">if</span> <span class="n">result</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="c1"># If avatar2 is installed, return a GDBTarget</span>
+        <span class="k">if</span> <span class="n">use_avatar2</span><span class="p">:</span>
+
+            <span class="c1"># Wait for gdbserver to be available</span>
+            <span class="n">sleep</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+            
+            <span class="c1"># Instanciate our GDB</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">debugger</span> <span class="o">=</span> <span class="n">Debugger</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__name</span><span class="p">,</span>
+                <span class="n">pid</span><span class="p">,</span>
+                <span class="n">ip</span><span class="o">=</span><span class="kc">None</span> <span class="k">if</span> <span class="n">ip</span><span class="o">==</span><span class="s1">&#39;0.0.0.0&#39;</span> <span class="k">else</span> <span class="n">ip</span><span class="p">,</span>
+                <span class="n">port</span><span class="o">=</span><span class="n">port</span><span class="p">,</span>
+                <span class="n">gdb</span><span class="o">=</span><span class="n">gdb_executable</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">debugger</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">result</span></div>
+
+<div class="viewcode-block" id="Instance.ps"><a class="viewcode-back" href="../../api.html#piotr.api.Instance.ps">[docs]</a>    <span class="k">def</span> <span class="nf">ps</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Run `ps` on this target and return a list of processes.</span>
+
+<span class="sd">        :return: list of processes</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Runs ps command</span>
+        <span class="n">guest</span> <span class="o">=</span> <span class="n">QemuGuest</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__name</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">guest</span><span class="o">.</span><span class="n">run_command</span><span class="p">(</span>
+            <span class="s1">&#39;ps&#39;</span><span class="p">,</span> <span class="p">[],</span>
+            <span class="n">wait</span><span class="o">=</span><span class="kc">True</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Parse result</span>
+        <span class="n">processes</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="sa">b</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">:]:</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">b</span><span class="s1">&#39;^\s+([0-9]+)\s+(\S+)\s+(.*)$&#39;</span><span class="p">,</span> <span class="n">l</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">res</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">processes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="n">Process</span><span class="p">(</span>
+                        <span class="n">pid</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)),</span>
+                        <span class="n">user</span><span class="o">=</span><span class="n">res</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;latin-1&#39;</span><span class="p">),</span>
+                        <span class="n">path</span><span class="o">=</span><span class="n">res</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;latin-1&#39;</span><span class="p">)</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">processes</span></div>
+
+<div class="viewcode-block" id="Instance.pid"><a class="viewcode-back" href="../../api.html#piotr.api.Instance.pid">[docs]</a>    <span class="k">def</span> <span class="nf">pid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">process_name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Find process ID from process name</span>
+<span class="sd">        :param process_name: process name</span>
+<span class="sd">        :type process_name: str</span>
+<span class="sd">        :return: PID of the process, None on error</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">processes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ps</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">process</span> <span class="ow">in</span> <span class="n">processes</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">process</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">process_name</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">process</span><span class="o">.</span><span class="n">pid</span>
+
+        <span class="c1"># Not found :(</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+        
+
+<div class="viewcode-block" id="Instance.kill"><a class="viewcode-back" href="../../api.html#piotr.api.Instance.kill">[docs]</a>    <span class="k">def</span> <span class="nf">kill</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pid</span><span class="p">,</span> <span class="n">sig</span><span class="o">=</span><span class="mi">9</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Kill a processus.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">guest</span> <span class="o">=</span> <span class="n">QemuGuest</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__name</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">guest</span><span class="o">.</span><span class="n">run_command</span><span class="p">(</span>
+            <span class="s1">&#39;kill&#39;</span><span class="p">,</span> <span class="p">[</span>
+                <span class="s1">&#39;-</span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">sig</span><span class="p">,</span>
+                <span class="s1">&#39;</span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">pid</span>
+            <span class="p">],</span>
+            <span class="n">wait</span><span class="o">=</span><span class="kc">True</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">result</span></div>
+
+<div class="viewcode-block" id="Instance.target_start"><a class="viewcode-back" href="../../api.html#piotr.api.Instance.target_start">[docs]</a>    <span class="k">def</span> <span class="nf">target_start</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Run target in host.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">exec_host</span><span class="p">(</span><span class="s1">&#39;target-start&#39;</span><span class="p">,</span> <span class="n">wait</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Instance.get_sysroot"><a class="viewcode-back" href="../../api.html#piotr.api.Instance.get_sysroot">[docs]</a>    <span class="k">def</span> <span class="nf">get_sysroot</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return this instance root path&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__device</span><span class="o">.</span><span class="n">get_sysroot</span><span class="p">()</span></div></div>
+
+
+
+<div class="viewcode-block" id="Device"><a class="viewcode-back" href="../../api.html#piotr.api.Device">[docs]</a><span class="k">class</span> <span class="nc">Device</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    API Device object.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">deviceName</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__device</span> <span class="o">=</span> <span class="n">deviceName</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">&#39;Device(name=&quot;</span><span class="si">%s</span><span class="s1">&quot;)&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">__device</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__device</span>
+
+<div class="viewcode-block" id="Device.run"><a class="viewcode-back" href="../../api.html#piotr.api.Device.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">alias</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">background</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Run emulated device.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">ud</span><span class="o">.</span><span class="n">get</span><span class="p">()</span><span class="o">.</span><span class="n">hasDevice</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__device</span><span class="p">):</span>
+            <span class="n">device</span> <span class="o">=</span> <span class="n">_Device</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__device</span><span class="p">)</span>
+            <span class="n">device_name</span> <span class="o">=</span> <span class="n">alias</span>
+
+            <span class="c1"># Check if we can emulate this platform</span>
+            <span class="k">if</span> <span class="n">QemuPlatforms</span><span class="o">.</span><span class="n">has</span><span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">getPlatform</span><span class="p">()):</span>
+                <span class="n">platform_clazz</span> <span class="o">=</span> <span class="n">QemuPlatforms</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">getPlatform</span><span class="p">())</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">warning</span><span class="p">(</span><span class="s1">&#39;Device&#39;</span><span class="p">,</span> <span class="s1">&#39;Unknown qemu platform `</span><span class="si">%s</span><span class="s1">`. Falling back to `virt`.&#39;</span> <span class="o">%</span> <span class="n">device</span><span class="o">.</span><span class="n">getPlatform</span><span class="p">())</span>
+                <span class="n">platform_clazz</span> <span class="o">=</span> <span class="n">QemuPlatforms</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;virt&#39;</span><span class="p">)</span>
+
+            <span class="n">guest</span> <span class="o">=</span> <span class="n">platform_clazz</span><span class="p">(</span><span class="n">device</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">device_name</span><span class="p">)</span>
+
+            <span class="c1"># Check if specific privileges are required.</span>
+            <span class="k">if</span> <span class="n">guest</span><span class="o">.</span><span class="n">requires_privileges</span><span class="p">():</span>
+                <span class="n">enforce_root</span><span class="p">()</span>
+
+            <span class="c1"># Start emulated device</span>
+            <span class="n">guest</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="n">background</span><span class="o">=</span><span class="n">background</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">background</span><span class="p">:</span>
+                <span class="n">guest</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
+                <span class="n">guest</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+                <span class="k">return</span> <span class="kc">None</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">Instance</span><span class="p">(</span>
+                    <span class="n">guest</span><span class="o">.</span><span class="n">get_pid</span><span class="p">(),</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">__device</span><span class="p">,</span>
+                    <span class="n">guest</span><span class="o">.</span><span class="n">get_sock</span><span class="p">(),</span>
+                    <span class="n">guest</span><span class="o">.</span><span class="n">get_name</span><span class="p">()</span>
+                <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">DeviceNotFound</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Device.get_sysroot"><a class="viewcode-back" href="../../api.html#piotr.api.Device.get_sysroot">[docs]</a>    <span class="k">def</span> <span class="nf">get_sysroot</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return this device root fs path&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">ud</span><span class="o">.</span><span class="n">get</span><span class="p">()</span><span class="o">.</span><span class="n">hasDevice</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__device</span><span class="p">):</span>
+            <span class="n">device</span> <span class="o">=</span> <span class="n">_Device</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__device</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">device</span><span class="o">.</span><span class="n">getRootfsPath</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span></div></div>
+
+
+<div class="viewcode-block" id="Piotr"><a class="viewcode-back" href="../../api.html#piotr.api.Piotr">[docs]</a><span class="k">class</span> <span class="nc">Piotr</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Piotr main API.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Piotr.devices"><a class="viewcode-back" href="../../api.html#piotr.api.Piotr.devices">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">devices</span><span class="p">():</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Enumerate registered devices.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">device</span> <span class="ow">in</span> <span class="n">ud</span><span class="o">.</span><span class="n">get</span><span class="p">()</span><span class="o">.</span><span class="n">getDevices</span><span class="p">():</span>
+            <span class="k">yield</span> <span class="n">Device</span><span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">name</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Piotr.instances"><a class="viewcode-back" href="../../api.html#piotr.api.Piotr.instances">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">instances</span><span class="p">():</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Enumerate running instances.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">qemu_enum</span> <span class="o">=</span> <span class="n">QemuGuestEnum</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">pid</span><span class="p">,</span><span class="n">instance</span><span class="p">,</span><span class="n">sock</span><span class="p">,</span><span class="n">inst_name</span> <span class="ow">in</span> <span class="n">qemu_enum</span><span class="o">.</span><span class="n">listGuests</span><span class="p">():</span>
+            <span class="k">yield</span> <span class="n">Instance</span><span class="p">(</span><span class="n">pid</span><span class="p">,</span> <span class="n">instance</span><span class="p">,</span> <span class="n">sock</span><span class="p">,</span> <span class="n">inst_name</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Piotr.instance"><a class="viewcode-back" href="../../api.html#piotr.api.Piotr.instance">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">instance</span><span class="p">(</span><span class="n">inst_name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Find an existing instance by name</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">instance</span> <span class="ow">in</span> <span class="n">Piotr</span><span class="o">.</span><span class="n">instances</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">instance</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">inst_name</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">instance</span></div></div>
+
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, Damien Cauquil.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
