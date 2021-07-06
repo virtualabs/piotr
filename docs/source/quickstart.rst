@@ -42,7 +42,7 @@ the following command:
 
 `sudo` is required as Qemu needs some administrative rights to access the network
 and forward packets from the localhost to the emulated device. You will be prompted
-with a Piotr banner, enter `root` as user and you will have a shell on the host
+with a Piotr banner and will have a shell on the host
 system. This is the host system, not the emulated device's. You then need to
 start the services belonging to the emulated device by calling the `target-start`
 command in the host shell, as shown below:
