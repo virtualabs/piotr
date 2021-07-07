@@ -68,6 +68,13 @@ At the moment, the only supported architecture is ARM for the `virt` platform.
     *Piotr* is designed to run on a Linux system, and has been only tested on this system so far.
 
 
+Compatible platforms
+--------------------
+
+*Piotr* has been designed to run only on **Linux** systems, and has been heavily tested
+on this operating system.
+
+
 Piotr main concepts
 ===================
 
@@ -112,15 +119,15 @@ We can use `piotr` to list the registered filesystems:
     $ piotr fs list
     Installed host filesystems:
 
-      > virt-1.0.1.ext2                     (version 1.0.1, type: ext2)             
-    
+    > virt.cortex-a7.little-5.10.7.ext2   (version 5.10.7, platform: virt, cpu: cortex-a7 (little-endian), type: ext2)
+
     1 filesystem(s) available
 
 Or register a new one:
 
 .. code-block:: text
 
-    $ piotr fs add virt-1.0.2.ext2
+    $ piotr fs add virt.cortex-a15.little-5.10.7.ext2
 
 Filesystems are usually tied to specific kernel versions as they contain kernel modules
 that are loaded at boot time. 
@@ -146,21 +153,19 @@ by issuing the following command:
     $ piotr kernel list
     Installed kernels:
 
-    > zImage-4.14.131-virt                                                        
-      Linux version 4.14.131, platform: virt
-  
-  
+    > virt.cortex-a7.little-5.10.7                                                
+    Linux version 5.10.7, platform: virt, cpu: cortex-a7 (little-endian)
+      
     1 kernel(s) available
 
-kernels are named exactly the same way host filesystems are: `zImage-<version string>-<platform>[-[optional tags]]`. 
+kernels are named exactly the same way host filesystems are: `<platform>.<cpu>.<endianness>-<version string>`. 
 
 We can add or remove kernel with `piotr`, as shown below:
 
 .. code-block:: text
 
-    $ piotr kernel add zImage
-    $ piotr kernel add zImage-5.10.0-virt
-    $ piotr kernel remove zImage-5.10.0-virt
+    $ piotr kernel add virt.cortex-a7.little-5.10.7
+    $ piotr kernel remove virt.cortex-a7.little-5.10.7
 
 
 Our host kernels are stored in our `Piotr` local folder (`$HOME/.piotr/kernels/`), as plain files.
@@ -399,6 +404,7 @@ hardware), as shown below:
         machine:
             platform: virt
             memory: 1024M
+            cpu: cortex-a7
 
 The configuration above declares a device called "My IoT device" that will run
 on Qemu's virt platform (the only currently supported by `piotr`), with 1024M
@@ -415,8 +421,9 @@ We then tells `piotr` which kernel to use and how to load the device root filesy
         machine:
             platform: virt
             memory: 1024M
+            cpu: cortex-a7
 
-        kernel: 4.14.131
+        kernel: 4.19.196
         bootargs: "root=/dev/vda rw console=ttyAMA,115200"
         guestfs: virtfs
 
@@ -445,8 +452,9 @@ configuration:
         machine:
             platform: virt
             memory: 1024M
+            cpu: cortex-a7
 
-        kernel: 4.14.131
+        kernel: 4.19.196
         bootargs: "root=/dev/vda rw console=ttyAMA,115200"
         guestfs: virtfs
 
@@ -478,9 +486,6 @@ and called `init.sh`. Below an example of such a script:
 
     # Add devpts support (mandatory)
     mount devpts /dev/pts -t devpts
-
-    # Config eth0 (if at least one network card has been declared)
-    ifconfig eth0 192.168.100.2
 
     # Start prerun program
     # (required to avoid errors due to emulation)
@@ -545,10 +550,9 @@ device and the emulated host system boots up:
 
         -----< version 1.0.0 >-----
 
-    piotr login:
+    [Host]# 
 
-We log in with the `root` username (no password required), and then start the
-guest:
+    We then start the guest (our embedded device):
 
 .. code-block:: text
 
@@ -875,6 +879,12 @@ allows to:
 * access the remote process memory
 * set and remove breakpoints
 * run, single step and stop execution
+
+.. note::
+
+    This debugger capability requires `avatar2 <https://github.com/avatartwo/avatar2>`_ to be installed on our machine, as it uses a
+    component provided by this Python package. This package is not installed by default, but
+    is mandatory for this feature.
 
 Controlling the execution
 ~~~~~~~~~~~~~~~~~~~~~~~~~
