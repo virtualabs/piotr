@@ -68,13 +68,6 @@ At the moment, the only supported architecture is ARM for the `virt` platform.
     *Piotr* is designed to run on a Linux system, and has been only tested on this system so far.
 
 
-Compatible platforms
---------------------
-
-*Piotr* has been designed to run only on **Linux** systems, and has been heavily tested
-on this operating system.
-
-
 Piotr main concepts
 ===================
 
