@@ -389,7 +389,7 @@ First, we set the target architecture (based on what was observed on the real
 hardware), as shown below:
 
 .. code-block:: yaml
-    :emphasize-lines: 3,4,5,6
+    :emphasize-lines: 3,4,5,6,7
 
     version: "1.0"
     device:
