@@ -1,0 +1,272 @@
+################################################################################
+#
+# Piotr emulated device configuration file
+# ----------------------------------------
+#
+# This YAML file has been created by Piotr and should be edited to fit your
+# needs. It contains some documentation about the available options, and the
+# possible values they accept and their meaning.
+#
+# Carefully read the advices given in comments to fully understand what these
+# options are for or do and how to use them.
+#
+################################################################################
+
+# Field: version
+#
+# This field specifies the version of the config.yaml file to use, and is
+# mandatory. Default value is "1.0".
+version: "1.0"
+
+# Field: device
+#
+# This field describes your device's hardware and software configuration. It
+# holds all the required subfields for this device.
+device:
+
+  # Field: device.name
+  #
+  # This field specifies the name of your embedded device. This name will be
+  # displayed by Piotr in its device listing, but does not correspond to the
+  # device alias. Consider this name as a descriptive name that will tell users
+  # what this device is (vendor, model, version, etc.)
+  name: "Dummy embedded device"
+
+  # Field: device.machine
+  #
+  # This field contains other fields specifying the hardware platform to use.
+  machine:
+
+    # Field: device.machine.platform
+    #
+    # The platform field specifies the platform Qemu must use to emulate the
+    # device. This value will be passed to qemu-system-arm with the `-M` option,
+    # and Qemu will try to load it. If this value does not correspond to any
+    # supported platforms, Qemu will complain and won't boot the kernel.
+    #
+    # You can get a list of Qemu supported devices by issuing the following
+    # command:
+    #
+    # $ qemu-system-arm -M help
+    #
+    # Each board has its own buses, hardware configuration and limitations, etc.
+    # You may want to consider Qemu's `virt` platform if you don't really know
+    # what platform to use. This generic platform is provided by Qemu and does
+    # have a PCI bus among other useful buses, and no RAM limit.
+    platform: virt
+
+    # Field: device.machine.memory
+    #
+    # This field specifies the amount of RAM your device will have, in Mb.
+    # If you set a specific platform, RAM may be limited and Qemu may raise
+    # some errors if you specify more memory than the board has.
+    memory: 1024
+
+    # Field: device.machine.cpu
+    #
+    # This field specifies a specific CPU to use. It must match exactly one of
+    # the CPUs supported by Qemu. This field is mandatory as it is used to find
+    # the best kernel image to use with the device.
+    #
+    # To get a list of supported CPU for a given platform:
+    #
+    # $ qemu-system-arm -M virt -cpu help
+    #
+    cpu: cortex-a7
+
+    # Field: device.machine.dtb
+    #
+    # This field specifies a DTB file to use.
+    #
+    # If this field is set to `auto`, Piotr will look for a matching DTB file
+    # from its DTB database. If it fails to find an exact match, it will try to
+    # load a generic version for the selected platform, if available.
+    #
+    # If this field is set to `embedded`, Piotr will consider the kernel image
+    # embeds the DTB file and therefore won't use any DTB option in Qemu.
+    #
+    # If you want to use your own custom DTB file without installing it in Piotr's
+    # DTB database, specify the relative path to your custom DTB file, as shown
+    # below:
+    #
+    #  dtb: versatilepb-cortex-m2.dtb
+    #
+    # UNCOMMENT THE FOLLOWING LINE TO ENABLE THIS OPTION
+    # dtb: auto
+
+  # Field: device.kernel
+  #
+  # This field specifies the kernel version to use, and accept multiple values.
+  #
+  # You can give a Linux kernel version (following the major.minor.revision format)
+  # and Piotr will search a compatible kernel from the installed kernels based
+  # on this version and the required platform (specified in device.machine.platform)
+  # 
+  # For instance:
+  #
+  #   kernel: 4.14.131
+  # 
+  # If an installed kernel is a perfect match (same platform and version), then
+  # it will be used. If Piotr does not find an exact match, it will pick a
+  # compatible 'generic' kernel with the required version, if available.
+  # Generic kernels are kernels compiled for a generic platform.
+  #
+  # If you want Piotr to use a custom kernel version dedicated to this device,
+  # you may specify a relative kernel path. Piotr will configure Qemu to load
+  # this kernel rather than looking for a compatible kernel from Piotr's kernels.
+  #
+  # Example:
+  #
+  #  kernel: kernel/my-custom-kernel
+  #
+  kernel: 4.14.131
+
+
+  # Field: device.bootargs
+  #
+  # This field specifies the boot arguments that will be passed to the kernel
+  # during boot, and may vary from one device to another.
+  #
+  # The following example tells Qemu to boot on the first virtual disk (`virt`
+  # platform is used) and to bind the stdio console to the ttyAMA0 device with
+  # a baudrate of 115200.
+  bootargs: "root=/dev/vda rw console=ttyAMA0,115200"
+
+  # Field: device.sd
+  #
+  # This field tells Piotr to add a second drive that may be used as an SD card.
+  # It specifies the directory relative path to use as SD card content.
+  sd: sdcard
+
+  # Field: device.hostfs
+  #
+  # This field tells Piotr which host filesystem to use. A host filesystem is
+  # a specific filesystem the emulated device will boot on, in which the device
+  # root filesystem (stored in rootfs directory) will be mounted. It provides a
+  # set of tools for the end user.
+  #
+  # The host filesystem is chosen based on the provided value, usually defining
+  # the target platform. By default, Piotr provides the virt host filesystem but
+  # you are free to use a custom one installed in Piotr's host filesystems or
+  # to specify a relative path to a custom filesystem your device will use.
+  #
+  # If you want to use the default `virt` host filesystem:
+  #
+  #  hostfs: virt
+  #
+  # If you want to use a custom host filesystem:
+  #
+  #  hostfs: fs/custom.ext2
+  #
+  # Host filesystems must be EXT2 raw images.
+  hostfs: virt
+
+  # Field: device.guestfs
+  #
+  # This field tells Piotr how to load the guest filesystem (that is, the content
+  # of this device rootfs directory).
+  #
+  # By default, Piotr considers your device will boot with Qemu's 9P file sharing
+  # capability and therefore will load your device root filesystem using this
+  # feature. It is supported by Linux since version 2.6.14, but may be experimental.
+  # Set this field to `virtfs` to force this behavior.
+  #
+  # If you do not want Piotr to use this 9P file sharing feature, you may want to
+  # specify the value `embed`. In this mode, Piotr will copy the whole device
+  # root filesystem into a copy of the host filesystem rather than mounting it
+  # during boot. By doing so, no network access is required for the host to access
+  # the emulated device rootfs.
+  #
+  # UNCOMMENT THE FOLLOWING LINE TO ENABLE THIS OPTION
+  # guestfs: virtfs
+
+  # Field: device.drive_type
+  #
+  # This field tells Piotr how it must configure the main hard drive.
+  # Three possible values are accepted:
+  #
+  #  - pci: tells Piotr to add a PCI hard drive
+  #  - virtio: tells Piotr to add a virtio hard drive (recommended if your device)
+  #            uses the `virt` platform
+  #  - scsi: tells Piotr to add a SCSI hard drive
+  #
+  # This field must be set accordingly to the selected platform.
+  drive_type: virtio
+
+  # Field: device.virtio
+  #
+  # This field tells Piotr how it must define virtio devices in Qemu. Depending
+  # on the chosen emulated platform, qemu may required a PCI bus or directly a
+  # device to be created for shared folders or network devices.
+  #
+  # This field only accepts two values:
+  #  - pci: tells Piotr to connect the virtio devices to the emulated device
+  #         PCI bus (using qemu option -device virtio-*-pci,...)
+  #  - device: tells Piotr to add a raw virtio device
+  #            (using qemu option -device virtio-*-device,...)
+  #
+  # If not specified, Piotr uses the default value 'device'.
+  #
+  # UNCOMMENT THE FOLLOWING LINE TO ENABLE THIS OPTION
+  # virtio: device
+
+  # Field: device.network
+  #
+  # This field specifies the network interfaces that will be installed in your
+  # device and the associated behavior.
+  network:
+
+    # Network interfaces declaration
+    #
+    # Each key/value pair defined in device.network describes a network interface
+    # that will be created.
+    #
+    # Two types of network interfaces are supported:
+    #  - user mode network interfaces: these interfaces use Qemu' SLIRP networking
+    #                                  and only allow port forwarding from host
+    #                                  to guest
+    #  - tap network interfaces: these interfaces are bound to a network exposed
+    #                            on a host network interface managed by Qemu, so
+    #                            you can monitor traffic or even communicate with
+    #                            services bound to this guest interface
+    #
+    # For more information on user-mode and tap interfaces, see:
+    #  https://wiki.qemu.org/Documentation/Networking#Network_backend_types
+    #
+    # If you want to create a user-mode NIC, use this configuration:
+    #
+    #  nic0: user
+    #
+    # If you prefer a tap network interface, use this setting:
+    #
+    #  nic0: tap,example_net
+    #
+    # The latter will create a dedicated NIC in the guest, but also a dedicated
+    # NIC on your host machine that you may use to communicate with your guest
+    # system.
+    nic0: user
+
+
+  # Field: device.redirect
+  #
+  # This field specifies some port redirections that must be set in order to
+  # allow host to guest communication.
+  redirect:
+
+    # Field: device.redirect.<NIC>
+    #
+    # This field specifies a set of redirection rules that must be applied when
+    # creating a user-mode network interface.
+    nic0:
+
+      # Each key/value pair defined here describes a port forwarding rule that
+      # will be set by Qemu.
+      #
+      # The syntax is the following:
+      #
+      #  <rule name>:<proto>,<local port>,<guest port>
+      #
+      # For instance:
+      #
+      #  telnet: tcp,2223,23
+      telnet: tcp,2223,23

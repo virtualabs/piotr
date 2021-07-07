@@ -1,0 +1,12 @@
+Metadata-Version: 1.2
+Name: piotr
+Version: 0.0.1
+Summary: UNKNOWN
+Home-page: https://www.virtualabs.fr
+Author: virtualabs
+Author-email: virtualabs@gmail.com
+License: UNKNOWN
+Description: UNKNOWN
+Platform: UNKNOWN
+Classifier: Development Status :: 1 - Planning
+Requires-Python: >=3.5

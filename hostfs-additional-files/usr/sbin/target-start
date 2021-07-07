@@ -1,0 +1,10 @@
+#!/bin/sh
+
+# Mount special devices
+mount --bind /proc /target/proc
+mount --bind /sys /target/sys
+mount --bind /dev /target/dev
+
+# Run our startup script from a chrooted environment
+# This script must be placed at this exact location
+chroot /target/ /piotr/init.sh

@@ -1,0 +1,6 @@
+[console_scripts]
+piotr = piotr:main
+piotr-debug = piotr.shell:debug_process
+piotr-ps = piotr.shell:host_ps
+piotr-shell = piotr.shell:guest_shell
+

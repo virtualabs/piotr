@@ -1,0 +1,33 @@
+#!/bin/sh
+#
+# Start/stop dhcpcd
+#
+
+DAEMON=/usr/bin/qemu-ga
+VPORT="-p /dev/vport0p1"
+PIDFILE=/var/run/qemuga.pid
+
+[ -f $CONFIG ] || exit 0
+
+case "$1" in
+  start)
+	echo "Starting qemu agent..."
+	start-stop-daemon -S -b -m --pidfile "$PIDFILE" -x $DAEMON -- $VPORT
+	;;
+  stop)
+	echo "Stopping qemu agent..."
+	start-stop-daemon -K -x "$DAEMON" -p "$PIDFILE" -o
+	;;
+  reload|force-reload)
+	echo "Reloading qemu agent configuration..."
+	"$DAEMON" -s reload
+	;;
+  restart)
+	"$0" stop
+	"$0" start
+	;;
+  *)
+	echo "Usage: $0 {start|stop|restart|reload|force-reload}"
+	exit 1
+esac
+

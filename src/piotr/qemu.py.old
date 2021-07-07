@@ -1,0 +1,606 @@
+from piotr.qemu import qemu_platform
+
+
+class QemuPlatform:
+    """
+    Qemu default platform class
+    """
+
+    def __init__(self, device):
+        self.__device = device
+        self.__process = None
+        self.__qemu = './piotr/data/qemu/qemu-system-arm-4.2.0-virtfs.64'
+        self.__qemu_args = []
+        self.nic_index = 0
+
+    def prepare_environment(self):
+        """
+        Prepare the running environment.
+
+        Duplicate the host filesystem if required (sometimes it is modified
+        by the guest system).
+
+        Prepare the SD card image file if required (if sd=true in config.yaml),
+        and provide the path to qemu.
+        """
+        # Create a temporary directory
+        self.__tempDir = tempfile.mkdtemp(prefix='piotr-')
+        debug('piotr.qemu:prepare_environment', 'Created temporary directory %s' % self.__tempDir)
+
+        # Copy our host filesystem in it
+        try:
+            debug('piotr.qemu:prepare_environment', 'Copy selected host FS to temporary directory')
+            tempHostFs = join(self.__tempDir, basename(self.__device.getHostFsPath()))
+            copyfile(
+                self.__device.getHostFsPath(),
+                tempHostFs
+            )
+            self.__hostFsPath = tempHostFs
+            debug('piot.qemu:prepare_environment', 'Host fs is now stored at: %s' % self.__hostFsPath)
+
+            # Embed our target file system if required (if guestfs is set to embed)
+            # This method is designed to work for old versions of kernel, in order to
+            # avoid using NFS as it may seem insecure to have a NFS share configured
+            # and a server running.
+            debug('piotr.qemu:prepare_environment', 'Checking if guest FS must be embedded into our duplicate host FS ...')
+            if self.__device.mustEmbedGuestFS():
+                debug('piotr.qemu:prepare_environment', 'Guest FS must be embedded')
+                debug('piotr.qemu:prepare_environment', 'Creating mounting point for host FS')
+
+                # First, create a temporary mount point for our filesystem
+                tempHostFsMP = join(self.__tempDir, 'host')
+                mkdir(tempHostFsMP)
+
+                # Then, we mount our host FS onto this mounting point
+                debug('piotr.qemu:prepare_environment', 'Mounting Host FS onto %s' % tempHostFsMP)
+                if subprocess.call('mount %s %s' % (
+                    tempHostFs,
+                    tempHostFsMP
+                    ), shell=True) == 0:
+                    debug('piotr.qemu:prepare_environment', 'Host FS successfully mounted !')
+
+                    # Copy guest filesystem into our host fs
+                    debug('piotr.qemu:prepare_environment', 'Copying guest FS into host FS ...')
+                    try:
+                        subprocess.call('cp -rf %s %s' % (
+                            join(self.__device.getPath(), 'rootfs/*'),
+                            join(tempHostFsMP, 'target'),
+                        ), shell=True)
+                        debug('piotr.qemu:prepare_environment', 'Guest FS successfully copied to host FS !')
+                    except Error as shutilErr:
+                        debug('piotr.qemu:prepare_environment', 'Unable to copy guest FS into host FS')
+                        warning('Piotr:QemuGuest', 'Cannot install guest FS into host FS (copy failed)')
+
+                        # Failure
+                        subprocess.call('umount %s' % tempHostFsMP)
+                        return False
+
+                    # Unmount host FS
+                    debug('piotr.qemu:prepare_environment', 'Unmounting host FS ...')
+                    if subprocess.call('umount %s' % tempHostFsMP, shell=True) == 0:
+                        debug('piotr.qemu:prepare_environment', 'Host FS successfully unmounted.')
+                    else:
+                        debug('piotr.qemu:prepare_environment', 'Unable to unmount host FS')
+                        warning('Piotr:QemuGuest', 'An error occurred while unmounting host FS')
+
+                        # Failure
+                        return False
+                else:
+                    debug('piotr.qemu:prepare_environment', 'Unable to mount host FS onto %s' % tempHostFsMP)
+                    warning('Piotr:QemuGuest', 'Cannot mount host FS to %s (required to embed guest FS)' % tempHostFsMP)
+
+            # Prepare our SD card if any
+            if self.__device.hasSd():
+
+                # Compute sd card image size (fs size + 50M)
+                sd_image = join(
+                    self.__tempDir,
+                    'sdcard.img'
+                )
+                sd_directory = Path(self.__device.getSdImage())
+                image_size = sum(f.stat().st_size for f in sd_directory.glob('**/*') if f.is_file()) + (50*(2**20))
+
+                # Allocate sd card image
+                image_alloc = subprocess.call('dd if=/dev/zero of=%s bs=%d count=1' % (
+                    sd_image,
+                    image_size
+                ), shell=True)
+                if image_alloc == 0:
+                    # create an ext2 filesystem
+                    image_fs = subprocess.call('mkfs.ext2 %s' % sd_image, shell=True)
+                    if image_fs == 0:
+                        # Mount filesystem and copy sdcard files
+                        sd_mp = join(self.__tempDir, 'sdcard')
+                        subprocess.call('mkdir %s' % sd_mp, shell=True)
+                        subprocess.call('mount -t ext2 %s %s' % (sd_image, sd_mp), shell=True)
+                        subprocess.call('cp -rf %s/* %s' % (sd_directory, sd_mp), shell=True)
+
+                        # unmount filesystem
+                        subprocess.call('umount %s' % sd_mp, shell=True)
+
+                        # SD card image is ready to use !
+                        self.__sdImagePath = sd_image
+                    else:
+                        debug('piotr.qemu:prepare_environment', 'cannot format sdcard image to ext2')
+                        error('QemuGuest','Cannot format SD card, mkfs.ext2 error occurred.')
+                        return False
+                else:
+                    debug('piotr.qemu:prepare_environment', 'cannot create sdcard image in temporary directory')
+                    error('QemuGuest', 'Cannot create SD card image in %s' % self.__tempDir)
+                    return False
+
+        except Exception as exc:
+            print(exc)
+            debug('piotr.qemu:prepare_environment', 'An exception occurred: %s' % str(exc))
+            error('QemuGuest', 'An error occurred, unable to prepare the guest environment.')
+            return False
+
+        return True
+
+    def clean_environment(self):
+        """
+        Clean environment.
+
+        Delete the temporary directory and remove all files.
+        """
+        debug('piotr.qemu:clean_environment', 'Remove temporary environment at %s' % self.__tempDir)
+        rmtree(self.__tempDir)
+        debug('piotr.qemu:clean_environment', 'Temporary environment removed')
+
+    def append_arg(argument):
+        """
+        Append an argument to qemu arguments list.
+        """
+        if isinstance(argument, str):
+            self.__qemu_args.append(argument)
+        elif isinstance(argument, list):
+            self.__qemu_args.extend(argument)
+        else:
+            raise ValueError()
+
+    def set_platform(self, platform):
+        """
+        Add qemu platform arguments
+
+        @param  str     platform    Qemu platform to use
+        """
+        # declare machine
+        self.append_arg([
+            '-M',
+            platform
+        ])
+
+    def set_cpu(self, cpu):
+        """
+        Add qemu platform argument.
+
+        @param  str     cpu     CPU to use.
+        """
+        self.append_arg([
+            '-cpu',
+            cpu
+        ])
+
+
+    def set_memory(self, memory):
+        """
+        Add qemu memory argument.
+
+        @param  str     memory  Memory to use.
+        """
+        self.append_arg([
+            '-m',
+            str(memory)
+        ])
+
+    def set_kernel(self, kernel):
+        """
+        Add qemu kernel argument.
+
+        @param  str     kernel  Kernel file to use.
+        """
+        self.append_arg([
+            '-kernel',
+            kernel
+        ])
+
+
+    def set_dtb(self, dtb):
+        """
+        Add qemu DTB file path argument.
+
+        @param  str     dtb     DTB file path.
+        """
+        self.append_arg([
+            '-dtb',
+            dtb
+        ])
+
+    def set_sd(self, sd_image_path):
+        """
+        Add qemu SD card arguments.
+
+        @param  str     sd_image_path   SD card image file path.
+        """
+        self.append_arg([
+            '-drive',
+            'file=%s,if=none,format=raw,id=hd1,index=1' % sd_image_path,
+            '-device',
+            'virtio-blk-device,drive=hd1'
+        ])
+
+    def set_host_drive(self, hostfs, drive_type):
+        """
+        Add qemu host drive with corresponding image.
+
+        @param  str     hostfs  Host FS path.
+        """
+        # Handle 'virtio' special drive.
+        if drive_type== 'virtio':
+            self.append_arg([
+                '-drive',
+                'file=%s,if=none,format=raw,id=hd0' % hostfs,
+                '-device',
+                'virtio-blk-device,drive=hd0'
+            ])
+        else:
+            # Otherwise use the provide drive type.
+            self.append_arg([
+                '-drive',
+                'file=%s,%s' % (
+                    hostfs,
+                    drive_type
+                )
+            ])
+
+
+    def set_bootargs(self, bootargs):
+        """
+        Add qemu bootargs argument.
+
+        @param  str     bootargs    Bootargs to use.
+        """
+        self.append_arg([
+            '-append',
+            '"%s"' % bootargs
+        ])
+
+    def set_nic(self, nic):
+        """
+        Add qemu nic arguments.
+
+        @param str  nic     Nic parameters to use.
+        """
+        self.append_arg([
+            '-netdev',
+            'user,id=net%d' % self.nic_index,
+            '-device',
+            'virtio-net-device,netdev=net%d' % self.nic_index
+        ])
+        # Increment nic index
+        self.__nic_index += 1
+
+    def set_network_tap(self):
+        """
+        Add a network tap interface.
+        """
+        qemu_args.extend([
+            '-netdev',
+            'type=tap,id=net%d,ifname=tap0,script=no,downscript=no' % self.nic_index,
+            '-device',
+            'virtio-net-device,netdev=net%d' % self.nic_index,
+        ])
+        self.nic_index += 1
+
+
+    def set_guest_fs(self, rootfs, fstype):
+        """
+        Add qemu guest FS arguments.
+
+        @param  str rootfs  Guest root filesystem path.
+        @param  str fstype  Bus name (must be 'pci' or 'device')
+        """
+        self.add_arg([
+            '-fsdev',
+            'local,path=%s,security_model=passthrough,id=host0' % (
+                rootfs
+                ),
+            '-device',
+            '%s,fsdev=host0,mount_tag=host0' % fstype,
+        ])
+
+    def set_no_screen(self):
+        """
+        Add qemu nographic option.
+        """
+        self.add_arg('-nographic')
+
+
+    def set_agent_vport(self, vport, device):
+        """
+        Set agent virtual serial port.
+
+        @param  str     vport   Virtual port UNIX socket path
+        @param  str     device  Virtual serial port device type
+        """
+        self.add_arg([
+            '-chardev',
+            'socket,path=%s,server,nowait,id=piotr' % vport,
+            '-device',
+            '%s' % device,
+            '-device',
+            'virtserialport,chardev=piotr,name=piotr'
+        ])
+
+
+    def prepare_args(self):
+        """
+        Prepare arguments array for qemu-system-arm.
+        """
+
+        # Generate command line to start Qemu guest
+        qemu_args = []
+
+        # Try to access the local qemu binary (development mode)
+        if exists(self.__qemu):
+            qemu_args.append(self.__qemu)
+        else:
+            piotrPath = dirname(sys.modules['piotr'].__file__)
+            qemu_args.append(join(piotrPath, self.__qemu[8:]))
+
+        # Add platform arguments
+        self.set_platform(self.__device.getPlatform())
+
+        # Add cpu arguments
+        if self.__device.getCpu() is not None:
+            self.set_cpu(self.__device.getCpu())
+
+        # Add memory arguments
+        self.set_memory(self.__device.getMemory())
+
+        # Add kernel
+        self.set_kernel(self.__device.getKernelPath())
+
+        # Add DTB argument if provided
+        if self.__device.hasDtb():
+            self.set_dtb(self.__device.getDtbPath())
+
+        # Add sd card arguments if required
+        if self.__device.hasSd():
+            self.set_sd(self.__sdImagePath)
+
+        # Add our host drive
+        self.set_host_drive(self.__hostFsPath, self.__device.getDriveType())
+
+        # Add bootargs arguments
+        self.set_bootargs(self.__device.getBootArgs())
+
+        # Add network card if provided
+        if self.__device.getNic() is not None:
+            self.set_nic(self.__device.getNic())
+
+        # set our network tap
+        if self.__device.getNic() is not None:
+            self.set_network_tap()
+
+        # set our virtfs share if required
+        if not self.__device.mustEmbedGuestFS():
+            self.set_guest_fs(
+                self.__device.getRootfsPath(),
+                self.__device.getVirtio9pConfig()
+            )
+
+        # No screen
+        self.set_no_screen()
+
+
+        # Add a virtual serial port to allow host/guest communication
+        virtport = join(self.__tempDir, 'piotr')
+        self.set_agent_vport(virtport, self.__device.getVirtioSerialConfig())
+
+    def start(self):
+        """
+        Start Qemu guest
+        """
+        # Prepare our environment
+        if self.prepare_environment():
+            # Generate command line to start Qemu guest
+            qemu_args = []
+
+            # Try to access the local qemu binary (development mode)
+            if exists(self.__qemu):
+                qemu_args.append(self.__qemu)
+            else:
+                piotrPath = dirname(sys.modules['piotr'].__file__)
+                qemu_args.append(join(piotrPath, self.__qemu[8:]))
+
+            # declare machine
+            qemu_args.extend([
+                '-M',
+                self.__device.getPlatform()
+            ])
+
+            # declare cpu if required
+            if self.__device.getCpu() is not None:
+                qemu_args.extend([
+                    '-cpu',
+                    self.__device.getCpu()
+                ])
+
+            # set memory
+            qemu_args.extend([
+                '-m',
+                self.__device.getMemory()
+            ])
+
+            # set kernel
+            qemu_args.extend([
+                '-kernel',
+                self.__device.getKernelPath()
+            ])
+
+            # set dtb (if provided)
+            if self.__device.hasDtb():
+                qemu_args.extend([
+                    '-dtb',
+                    self.__device.getDtbPath()
+                ])
+
+            if self.__device.hasSd():
+                # Mount SD card as another hard drive
+                # Args must be put before main drive
+                # or it will try to boot on hd1
+                if self.__device.getPlatform()=='virt':
+                    qemu_args.extend([
+                        '-drive',
+                        'file=%s,if=none,format=raw,id=hd1,index=1' % self.__sdImagePath,
+                        '-device',
+                        'virtio-blk-device,drive=hd1'
+                    ])
+                else:
+                    qemu_args.extend([
+                        '-drive',
+                        'file=%s,if=none,format=raw,id=sdcard,index=2' % self.__sdImagePath,
+                        '-device',
+                        'virtio-blk-device,drive=sdcard'
+                    ])
+                """
+                qemu_args.extend([
+                    '-device',
+                    'sdhci-pci,id=sdcard',
+                    '-drive',
+                    'if=sd,id=sdcard,file=%s' % self.__sdImagePath
+                ])
+
+                qemu_args.extend([
+                    '-drive',
+                    'file=%s,if=none,format=raw,id=sdcard,index=2' % self.__sdImagePath,
+                    '-device',
+                    'virtio-blk-device,drive=sdcard'
+                ])
+                qemu_args.extend([
+                    '-device',
+                    'sdhci-pci,id=sdcard',
+                    '-drive',
+                    'if=sdhci,id=sdcard,file=%s' % self.__sdImagePath
+                ])
+                qemu_args.extend([
+                    '-device',
+                    'sd-card,'
+                    self.__sdImagePath
+                ])
+                """
+
+            # declare our host drive
+            if self.__device.getDriveType() == 'virtio':
+                qemu_args.extend([
+                    '-drive',
+                    'file=%s,if=none,format=raw,id=hd0' % self.__hostFsPath,
+                    '-device',
+                    'virtio-blk-device,drive=hd0'
+                ])
+            else:
+                qemu_args.extend([
+                    '-drive',
+                    'file=%s,%s' % (
+                        self.__hostFsPath,
+                        self.__device.getDriveType()
+                    )
+                ])
+
+            # set bootargs
+            qemu_args.extend([
+                '-append',
+                '"%s"' % self.__device.getBootArgs()
+            ])
+
+            # add a network card if required
+            if self.__device.getNic() is not None:
+                if self.__device.getPlatform() == 'virt':
+                    qemu_args.extend([
+                        '-netdev',
+                        'user,id=net0,hostfwd=tcp::8080-:80',
+                        '-device',
+                        'virtio-net-device,netdev=net0'
+                    ])
+                else:
+                    qemu_args.extend([
+                        '-net',
+                        self.__device.getNic()
+                    ])
+
+            # set our network tap
+            if self.__device.getNic() is not None:
+                qemu_args.extend([
+                    '-netdev',
+                    'type=tap,id=net1,ifname=tap0,script=no,downscript=no',
+                    '-device',
+                    'virtio-net-device,netdev=net1',
+                ])
+            else:
+                qemu_args.extend([
+                    '-net',
+                    'tap,ifname=tap0,script=no,downscript=no'
+                ])
+
+            # set our virtfs share if required
+            if not self.__device.mustEmbedGuestFS():
+                qemu_args.extend([
+                    '-fsdev',
+                    'local,path=%s,security_model=passthrough,id=host0' % (
+                        self.__device.getRootfsPath()
+                        ),
+                    '-device',
+                    '%s,fsdev=host0,mount_tag=host0' % self.__device.getVirtio9pConfig(),
+                ])
+
+            # No screen
+            qemu_args.append('-nographic')
+
+
+            # Add a virtual serial port to allow host/guest communication
+            virtport = join(self.__tempDir, 'piotr')
+            qemu_args.extend([
+                '-chardev',
+                'socket,path=%s,server,nowait,id=piotr' % virtport,
+                '-device',
+                '%s' % self.__device.getVirtioSerialConfig(),
+                '-device',
+                'virtserialport,chardev=piotr,name=piotr'
+            ])
+
+            # Start process with dedicated environment
+            try:
+                # Save device name and socket in environment variables
+                environ['PIOTR_GUEST'] = self.__device.getDeviceName()
+                environ['PIOTR_SOCK'] = join(self.__tempDir, 'piotr')
+                print(' '.join(qemu_args))
+                debug('piotr.qemu:start', ' '.join(qemu_args))
+
+                # Launch Qemu-system-arm
+                self.__process = subprocess.Popen(
+                    ' '.join(qemu_args),
+                    shell=True
+                )
+                info('Qemu', 'Device %s started successfully' % self.__device.getName())
+                return True
+            except OSError as err:
+                debug('piotr.qemu.QemuGuest:start', 'An error occurred: %s' % str(err))
+                error("Qemu", 'Cannot start device %s' % self.__device.getName())
+        else:
+            debug('piotr.qemu:start', 'An error occurred while prepping env')
+            error('Piotr:QemuGuest','Cannot setup the guest environment, aborting ...')
+            self.clean_environment()
+
+    def wait(self):
+        """
+        Wait for child process to complete.
+        """
+        if self.__process is not None:
+            self.__process.wait()
+
+    def stop(self):
+        """
+        Clean environment once the guest is stopped
+        """
+        self.clean_environment()
