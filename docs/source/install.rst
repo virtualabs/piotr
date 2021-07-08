@@ -26,7 +26,7 @@ ArchLinux
 
 .. code-block:: text
 
-    $ pacman -S qemu-system-arm
+    $ pacman -S qemu-arch-extra
 
 
 
