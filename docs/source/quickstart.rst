@@ -13,7 +13,7 @@ shown below:
 
 .. code-block:: text
 
-    $ wget https://github.com/piotr/tree/master/examples/dvar.piotr
+    $ wget https://github.com/virtualabs/piotr/blob/main/examples/dvar.piotr?raw=true
     $ sudo piotr device add dvar.piotr
     $ rm dvar.piotr
 
